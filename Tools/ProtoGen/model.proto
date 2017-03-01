@@ -1,0 +1,15 @@
+package google.protobuf;
+option optimize_for = SPEED;
+
+message GameData {
+  required int32 type = 1;
+  required bytes datas = 2;
+}
+message PlayerInfo {
+  required bytes player_id = 1;
+  required string name = 2;
+}
+message RooomInfo {
+  required bytes room_id = 1;
+  required string name = 2;
+}
