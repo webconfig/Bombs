@@ -9,8 +9,8 @@ namespace BombsServer.Game
     public class Room
     {
         public RooomItem Data;
-
-        public List<Session<Player>> players=new List<Session<Player>>();
+        public State state = State.Init;
+        public Dictionary<int,Session<Player>> players=new Dictionary<int, Session<Player>>();
 
         /// <summary>
         /// 玩家加入
@@ -19,35 +19,37 @@ namespace BombsServer.Game
         /// <returns></returns>
         public void AddPlayer(Session<Player> player)
         {
+            if (state != State.Init) { return; }
             try
             {
                 player.PlayerInfo.RoomId = Data.id;
-                //==获取所有玩家
-                Players ps = new Players();
-                bool has = false;
-                for (int i = 0; i < players.Count; i++)
+                //===加入====
+                if (players.ContainsKey(player.PlayerInfo.Data.Id))
                 {
-                    if (players[i].PlayerInfo.Data.Id==player.PlayerInfo.Data.Id)
-                    {
-                        players[i] = player;
-                        has = true;
-                    }
-                    else
-                    {
-                        ps.player.Add(players[i].PlayerInfo.Data);
-                    }
+                    players[player.PlayerInfo.Data.Id] = player;
                 }
-                if(!has)
+                else
                 {
-                    ps.player.Add(player.PlayerInfo.Data);
-                    players.Add(player);
+                    players.Add(player.PlayerInfo.Data.Id, player);
                 }
 
-                //==广播
-                for (int i = 0; i < players.Count; i++)
+                //====向加入的玩家广播所有玩家=====
+                Players p_all = new Players();
+                foreach(var item in players)
                 {
-                    players[i].Send<Players>(22,ps);
+                    p_all.player.Add(item.Value.PlayerInfo.Data);
+                }
+                player.Send<Players>(22, p_all);
 
+                //====向已经存在的玩家广播已加入的玩家=====
+                Players p_add = new Players();
+                p_add.player.Add(player.PlayerInfo.Data);
+                foreach (var item in players)
+                {
+                    if (item.Key != player.PlayerInfo.Data.Id)
+                    {
+                        item.Value.Send<Players>(22, p_add);
+                    }
                 }
             }
             catch (Exception ex)
@@ -64,13 +66,12 @@ namespace BombsServer.Game
         /// <returns></returns>
         public void PlayerReady(int player_id)
         {
-            for (int i = 0; i < players.Count; i++)
+            if (state != State.Init) { return; }
+            if (!players.ContainsKey(player_id))
             {
-                if(players[i].PlayerInfo.Data.Id==player_id)
-                {
-                    players[i].PlayerInfo.Data.State = 2;
-                }
+                return;
             }
+            players[player_id].PlayerInfo.Data.State = 2;
             //====广播xx准备好了=====
             CommResult result = new CommResult();
             result.Result = player_id;
@@ -78,6 +79,36 @@ namespace BombsServer.Game
             {
                 players[i].Send<CommResult>(23, result);
             }
+
+            bool IsAllReady = true;
+            foreach(var item in players)
+            {
+                if(item.Value.PlayerInfo.Data.State!=2)
+                {
+                    IsAllReady = false;
+                    break;
+                }
+            }
+            if(IsAllReady)
+            {//所有玩家都准备好了
+                state = State.Start;
+            }
+        }
+
+        /// <summary>
+        /// 开始加载游戏
+        /// </summary>
+        public void GameStartLoading()
+        {
+
+        }
+
+        public enum State
+        {
+            Init,
+            Start,
+            Running,
+            Over
         }
     }
 }
