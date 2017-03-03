@@ -14,7 +14,6 @@ public  class Client
     public object datas_obj;
     public Socket socket;
     private byte[] buffer;
-    private List<byte> AllDatas;
     public ConnectionState State { get; private set; }
     public event CallBack ConnectOkEvent;
     public LoginServerHandlers Handlers { get; set; }
@@ -23,7 +22,6 @@ public  class Client
     {
         this.datas = new Dictionary<int, Queue<Packet>>();
         this.buffer = new byte[BufferSize];
-        AllDatas = new List<byte>();
         Handlers = new LoginServerHandlers();
         Handlers.AutoLoad();
         RecvBuffer = new byte[BufferSize];
@@ -148,6 +146,16 @@ public  class Client
                 this.State = ConnectionState.Disconnected;
                 return;
             }
+
+            int total_length = CurrentOffset + bytesReceived;
+            if (total_length > RecvBuffer.Length)
+            {//接受的数据超过缓冲区
+                Debug.Log("==接受的数据超过缓冲区==");
+                Byte[] newBuffer = new Byte[total_length];
+                Buffer.BlockCopy(RecvBuffer, 0, newBuffer, 0, CurrentOffset);
+                RecvBuffer = newBuffer;
+            }
+
             //===拷贝数据到缓存===
             Buffer.BlockCopy(buffer, 0, RecvBuffer, CurrentOffset, bytesReceived);
             CurrentOffset += bytesReceived;
@@ -157,6 +165,11 @@ public  class Client
             while (CurrentOffset > 3)
             {
                 DataSize = BitConverter.ToUInt16(RecvBuffer, 0);
+                if(DataSize == 0)
+                {
+                    Debug.Log("===============recv error=============");
+                    break;
+                }
                 TotalSize = DataSize;
                 if (TotalSize <= CurrentOffset)
                 {
