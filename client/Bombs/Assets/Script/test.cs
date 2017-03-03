@@ -125,4 +125,10 @@ public class test : MonoBehaviour
     {
         NetHelp.Send(23, Connection.Client.socket);
     }
+
+
+    void GameLoading(int GameLevelId)
+    {
+
+    }
 }
