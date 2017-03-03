@@ -1,13 +1,13 @@
 ﻿using System;
 using Comm.Util;
-using BombsServer.Network;
+using BombsServer.Game;
+
 namespace BombsServer
 {
     class Program
     {
         static void Main(string[] args)
         {
-            //Scene.Instance.LoadScene("scene_demo.xml");
             try
             {
                 GameServer.Instance.Run();

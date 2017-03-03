@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<game>
+  <rooms>
+    <item id="100" name="房间1" max="10" />
+    <item id="101" name="房间2" max="10" />
+    <item id="102" name="房间3" max="10" />
+    <item id="103" name="房间4" max="10" />
+    <item id="104" name="房间5" max="10" />
+  </rooms>
+</game>

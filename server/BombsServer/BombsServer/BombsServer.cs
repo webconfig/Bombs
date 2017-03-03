@@ -3,20 +3,25 @@ using System.Net;
 using System;
 using Comm.Network.Iocp;
 using Comm.Util;
+using BombsServer.Game;
+using google.protobuf;
+using BombsServer.Network;
 
-namespace BombsServer.Network
+namespace BombsServer
 {
     public class GameServer
     {
         public static readonly GameServer Instance = new GameServer();
+        public RoomManager RoomMag;
         private bool _running = false;
-        public ServerIOCP<Session> Server;
+        public ServerIOCP<Player> Server;
         public GateConf Conf { get; private set; }
         private GameServer()
         {
-            this.Server = new ServerIOCP<Session>();
-            Server.Handlers = new ClientHandler();
-            Server.Handlers.AutoLoad();
+            RoomMag = new RoomManager();
+            ClientHandler Handlers = new ClientHandler();
+            Handlers.AutoLoad();
+            this.Server = new ServerIOCP<Player>(2000, 1024, Handlers);
         }
         public void Run()
         {
@@ -27,6 +32,8 @@ namespace BombsServer.Network
             CliUtil.LoadingTitle();
             //配置文件
             this.LoadConf(this.Conf = new GateConf());
+
+            RoomMag.Init("game.xml");
 
             //// Database
             //this.InitDatabase(this.Database = new LoginDb(), this.Conf);
@@ -47,7 +54,7 @@ namespace BombsServer.Network
             //this.LoadScripts();
 
             //开启服务器
-            Server.Start(IPAddress.Any, this.Conf.Gate.Port);
+            Server.Start("127.0.0.1", this.Conf.Gate.Port);
 
             CliUtil.RunningTitle();
             _running = true;
