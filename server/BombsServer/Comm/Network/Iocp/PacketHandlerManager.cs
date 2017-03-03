@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,9 +14,9 @@ namespace Comm.Network.Iocp
     /// 处理数据
     /// </summary>
     /// <typeparam name="TClient"></typeparam>
-    public class PacketHandlerManager
+    public class PacketHandlerManager<C>
     {
-        public delegate void PacketHandlerFunc(Session client, byte[] datas, ushort start_index, ushort length);
+        public delegate void PacketHandlerFunc(Session<C> session, SocketAsyncEventArgs args, byte[] datas, ushort start_index, ushort length);
         private Dictionary<byte, PacketHandlerFunc> _handlers;
 
         public PacketHandlerManager()
@@ -55,18 +56,18 @@ namespace Comm.Network.Iocp
         /// <param name="client"></param>
         /// <param name="command"></param>
         /// <param name="datas"></param>
-        public virtual void Handle(Session session, byte command, byte[] datas, ushort start_index,ushort length)
+        public virtual void Handle(Session<C> session, SocketAsyncEventArgs args, byte command, byte[] datas, ushort start_index,ushort length)
         {
             PacketHandlerFunc handler;
             if (!_handlers.TryGetValue(command, out handler))
             {
-                this.UnknownPacket(session, command);
+                //this.UnknownPacket(session, command);
                 return;
             }
 
             try
             {
-                handler(session, datas, start_index, length);
+                handler(session, args,datas, start_index, length);
             }
             catch (PacketElementTypeException ex)
             {
@@ -79,10 +80,10 @@ namespace Comm.Network.Iocp
             }
         }
 
-        public virtual void UnknownPacket(Session session, int command)
-        {
-            //Log.Unimplemented("PacketHandlerManager: Handler for '{0:X4}', '{1}'.", command, Op.GetName(command));
-        }
+        //public virtual void UnknownPacket(Session<C> session, int command)
+        //{
+        //    //Log.Unimplemented("PacketHandlerManager: Handler for '{0:X4}', '{1}'.", command, Op.GetName(command));
+        //}
 
         public  void RecvData<T>(byte[] data, out T t,ushort start,ushort length)
         {

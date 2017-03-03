@@ -19,10 +19,7 @@ namespace Comm.Network.Iocp
             {
                 return hElem;
             }
-            else
-            {
-                return new T();
-            }
+            return null;
         }
 
         public void Recycle(T hElement)
