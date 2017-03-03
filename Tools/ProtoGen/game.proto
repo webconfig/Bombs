@@ -31,3 +31,12 @@ message PlayerInfo {
   required string Name = 2;
   required int32 State = 3;
 }
+message GameLoading {
+  required string GameLevelId = 2;
+  repeated PlayerFightInfo Players = 2;
+}
+
+
+message PlayerFightInfo {
+  required int32 RoleId = 1;
+}
