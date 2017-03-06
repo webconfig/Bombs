@@ -4,9 +4,10 @@ using System;
 using Comm.Network.Iocp;
 using Comm.Util;
 using BombsServer.Game;
+using System.Reflection;
 using google.protobuf;
 using BombsServer.Network;
-
+using GameEngine;
 namespace BombsServer
 {
     public class GameServer
@@ -25,39 +26,41 @@ namespace BombsServer
         }
         public void Run()
         {
-            if (_running)
-                throw new Exception("服务器正在运行...");
-            //标题栏
-            CliUtil.WriteHeader("GateServer " + DateTime.Now.ToString(), ConsoleColor.Magenta);
-            CliUtil.LoadingTitle();
-            //配置文件
-            this.LoadConf(this.Conf = new GateConf());
+            //if (_running)
+            //    throw new Exception("服务器正在运行...");
+            ////标题栏
+            //CliUtil.WriteHeader("GateServer " + DateTime.Now.ToString(), ConsoleColor.Magenta);
+            //CliUtil.LoadingTitle();
+            ////配置文件
+            //this.LoadConf(this.Conf = new GateConf());
 
-            RoomMag.Init("game.xml");
+            //RoomMag.Init("game.xml");
 
-            //// Database
-            //this.InitDatabase(this.Database = new LoginDb(), this.Conf);
+            ////// Database
+            ////this.InitDatabase(this.Database = new LoginDb(), this.Conf);
 
-            //// Check if there are any updates
-            //this.CheckDatabaseUpdates();
+            ////// Check if there are any updates
+            ////this.CheckDatabaseUpdates();
 
-            //// Data
-            //this.LoadData(DataLoad.LoginServer, false);
+            ////// Data
+            ////this.LoadData(DataLoad.LoginServer, false);
 
-            //// Localization
-            //this.LoadLocalization(this.Conf);
+            ////// Localization
+            ////this.LoadLocalization(this.Conf);
 
-            //// Web API
-            //this.LoadWebApi();
+            ////// Web API
+            ////this.LoadWebApi();
 
-            //// Scripts
-            //this.LoadScripts();
+            ////// Scripts
+            ////this.LoadScripts();
 
-            //开启服务器
-            Server.Start("127.0.0.1", this.Conf.Gate.Port);
+            ////开启服务器
+            //Server.Start("127.0.0.1", this.Conf.Gate.Port);
 
-            CliUtil.RunningTitle();
-            _running = true;
+            //CliUtil.RunningTitle();
+            //_running = true;
+
+            GameManager.Instance.Init("config/scene.xml", Assembly.GetExecutingAssembly());
 
             //GM操作
             var commands = new GMCommands();

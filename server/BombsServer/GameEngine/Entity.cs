@@ -1,20 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Xml;
 
-namespace BombsServer.Game
+namespace GameEngine
 {
     public class Entity
     {
+        //=======xml 数据====
+        public int Id;
+        public Vector3 Position;
         public string Name;
-        public List<Script> Scripts = new List<Script>();
-        public List<Script> ScriptsAdd = new List<Script>();
+        public List<Script> Scripts;
+        //==================
+        public List<Script> ScriptsAdd=new List<Script>();
         public EntityState state;
-        public void Init()
+
+        public virtual void Init(XmlNode node)
         {
-            state = EntityState.Init;
+            Id = GameManager.GetXmlAttrInt(node, "id");
+            Name = node.Attributes["name"].InnerText;
+            Scripts = new List<Script>();
+            XmlNodeList nodes = node.SelectSingleNode("script").ChildNodes;
+            foreach(XmlNode script_node in nodes)
+            {
+                Script sb = GameManager.Instance.CreateScript(script_node.Name);
+                sb.Init(script_node);
+                Scripts.Add(sb);
+            }
         }
 
         public void AddScript(Script item)
@@ -65,6 +77,21 @@ namespace BombsServer.Game
         public void Destory()
         {
             state = EntityState.Destory;
+        }
+
+        //====深拷贝====
+        public void Copy(Entity entity)
+        {
+            entity.Id = this.Id;
+            entity.Position = this.Position;
+            entity.Name = this.Name;
+
+            entity.Scripts = new List<Script>();
+            for (int i = 0; i < Scripts.Count; i++)
+            {
+                Script script = Scripts[i].Create();
+                entity.Scripts.Add(script);
+            }
         }
     }
     public enum EntityState

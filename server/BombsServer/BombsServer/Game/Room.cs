@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using Comm.Network.Iocp;
 using BombsServer.Network;
 using System;
-
+using GameEngine;
 namespace BombsServer.Game
 {
     public class Room
     {
         public RooomItem Data;
+        public Scene scene; 
         public State state = State.Init;
         public Dictionary<int,Session<Player>> players=new Dictionary<int, Session<Player>>();
 

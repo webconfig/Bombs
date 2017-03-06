@@ -4,17 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6378A858-2071-47ED-A132-17A5B08B68CF}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{08B94DF9-A413-4BA1-9EF3-0BCAFA6CB07B}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BombsServer</RootNamespace>
-    <AssemblyName>BombsServer</AssemblyName>
+    <RootNamespace>GameEngine</RootNamespace>
+    <AssemblyName>GameEngine</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net">
-      <HintPath>..\Comm\DLL\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,46 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\GMCommands.cs" />
-    <Compile Include="Configuration\GateConf.cs" />
-    <Compile Include="Game\RoomManager.cs" />
-    <Compile Include="Game\Room.cs" />
-    <Compile Include="BombsServer.cs" />
-    <Compile Include="Game\Script\PlayerControl.cs" />
-    <Compile Include="Network\Handlers\ClientHandler.cs" />
-    <Compile Include="Network\Player.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="Math\Vector3.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="proto\game.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="game.conf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Comm\Comm.csproj">
-      <Project>{af161bb0-96a7-47df-a77b-61e8d1b143d5}</Project>
-      <Name>Comm</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GameEngine\GameEngine.csproj">
-      <Project>{08b94df9-a413-4ba1-9ef3-0bcafa6cb07b}</Project>
-      <Name>GameEngine</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <Content Include="config\game.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="config\scene.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="scene_demo.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Compile Include="Scene.cs" />
+    <Compile Include="GameManager.cs" />
+    <Compile Include="Script.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

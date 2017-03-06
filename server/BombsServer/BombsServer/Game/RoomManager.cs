@@ -35,6 +35,7 @@ namespace BombsServer.Game
                             room.Data.id = Convert.ToByte(obj.Attributes["id"].Value);
                             room.Data.name = obj.Attributes["name"].Value;
                             room.Data.max= Convert.ToByte(obj.Attributes["max"].Value);
+                            room.scene = GameEngine.GameManager.Instance.CreateScene(GameEngine.GameManager.GetXmlAttrInt(obj, "sceneid"));
                             rooms.Add(room.Data.id, room);
                         }
                         break;

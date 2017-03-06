@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BombsServer.Game
+namespace GameEngine
 {
-    public class Prefab:Entity
+    public struct Vector3
     {
-
+        public int x;
+        public int y;
+        public int z;
     }
 }
