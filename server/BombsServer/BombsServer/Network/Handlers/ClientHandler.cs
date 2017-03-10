@@ -63,7 +63,7 @@ namespace BombsServer
         /// <param name="client"></param>
         /// <param name="datas"></param>
         [PacketHandler(23)]
-        public void PlayerReady(Session<Player> client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
+        public void GameMesage(Session<Player> client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
         {
             GameServer.Instance.RoomMag.PlayerReady(client.PlayerInfo.RoomId, client.PlayerInfo.Data.Id);
             Log.Debug("房间：{0},玩家准备好：{1}", client.PlayerInfo.RoomId, client.PlayerInfo.Data.Name);
