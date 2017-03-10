@@ -123,14 +123,14 @@ namespace google.protobuf
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
-  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"PlayerJoin")]
-  public partial class PlayerJoin : global::ProtoBuf.IExtensible
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Players")]
+  public partial class Players : global::ProtoBuf.IExtensible
   {
-    public PlayerJoin() {}
+    public Players() {}
     
-    private readonly global::System.Collections.Generic.List<google.protobuf.Player> _player = new global::System.Collections.Generic.List<google.protobuf.Player>();
+    private readonly global::System.Collections.Generic.List<google.protobuf.PlayerInfo> _player = new global::System.Collections.Generic.List<google.protobuf.PlayerInfo>();
     [global::ProtoBuf.ProtoMember(1, Name=@"player", DataFormat = global::ProtoBuf.DataFormat.Default)]
-    public global::System.Collections.Generic.List<google.protobuf.Player> player
+    public global::System.Collections.Generic.List<google.protobuf.PlayerInfo> player
     {
       get { return _player; }
     }
@@ -140,10 +140,10 @@ namespace google.protobuf
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
-  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Player")]
-  public partial class Player : global::ProtoBuf.IExtensible
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"PlayerInfo")]
+  public partial class PlayerInfo : global::ProtoBuf.IExtensible
   {
-    public Player() {}
+    public PlayerInfo() {}
     
     private int _Id;
     [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"Id", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]

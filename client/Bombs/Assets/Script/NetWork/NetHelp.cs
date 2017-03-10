@@ -35,6 +35,25 @@ public class NetHelp
             UnityEngine.Debug.Log("发送数据错误:" + ex.ToString());
         }
     }
+    public static void Send(byte type, byte[] msg, Socket socket)
+    {
+        ushort total_length = (ushort)(msg.Length + 3);
+        byte[] total_length_bytes = BitConverter.GetBytes(total_length);
+        //消息体结构：消息体长度+消息体
+        byte[] data = new byte[total_length];
+        total_length_bytes.CopyTo(data, 0);
+        data[2] = type;
+        msg.CopyTo(data, 3);
+
+        try
+        {
+            socket.Send(data);
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.Log("发送数据错误:" + ex.ToString());
+        }
+    }
     public static void Send(byte type, Socket socket)
     {
         ushort total_length = 3;

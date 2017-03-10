@@ -17,7 +17,7 @@ public  class Client
     public ConnectionState State { get; private set; }
     public event CallBack ConnectOkEvent;
     public LoginServerHandlers Handlers { get; set; }
-    private int CurrentOffset=0;
+    private ushort CurrentOffset=0,CurrentLength;
     public Client()
     {
         this.datas = new Dictionary<int, Queue<Packet>>();
@@ -146,46 +146,49 @@ public  class Client
                 this.State = ConnectionState.Disconnected;
                 return;
             }
-
+            if(bytesReceived>1000)
+            {
+                int pppp = 1;
+            }
             int total_length = CurrentOffset + bytesReceived;
             if (total_length > RecvBuffer.Length)
             {//接受的数据超过缓冲区
                 Debug.Log("==接受的数据超过缓冲区==");
                 Byte[] newBuffer = new Byte[total_length];
-                Buffer.BlockCopy(RecvBuffer, 0, newBuffer, 0, CurrentOffset);
+                Buffer.BlockCopy(RecvBuffer, CurrentOffset, newBuffer, 0, CurrentLength);
+                CurrentOffset = 0;
                 RecvBuffer = newBuffer;
             }
 
             //===拷贝数据到缓存===
             Buffer.BlockCopy(buffer, 0, RecvBuffer, CurrentOffset, bytesReceived);
-            CurrentOffset += bytesReceived;
-
-            ushort DataSize, TotalSize, MsgSize;
+            Debug.Log("add---"+CurrentOffset + "-" + bytesReceived);
+            //CurrentOffset += (ushort)bytesReceived;
+            CurrentLength += (ushort)bytesReceived;
+            ushort DataSize, MsgSize;
             byte command;
-            while (CurrentOffset > 3)
+            while (CurrentLength > 3)
             {
-                DataSize = BitConverter.ToUInt16(RecvBuffer, 0);
+                DataSize = BitConverter.ToUInt16(RecvBuffer, CurrentOffset);
                 if(DataSize == 0)
                 {
                     Debug.Log("===============recv error=============");
                     break;
                 }
-                TotalSize = DataSize;
-                if (TotalSize <= CurrentOffset)
+                if (DataSize <= CurrentLength)
                 {
-                    command = RecvBuffer[2];//命令
+                    command = RecvBuffer[CurrentOffset+2];//命令
                     MsgSize = (ushort)(DataSize - 3);
-                    Handlers.Handle(this, command, RecvBuffer, 3, MsgSize);
+                    Handlers.Handle(this, command, RecvBuffer, (ushort)(DataSize + 3), MsgSize);
                     //---删除----
-                    Array.Clear(RecvBuffer, 0, TotalSize);
-                    CurrentOffset -= TotalSize;
+                    CurrentOffset += DataSize;
+                    CurrentLength -= DataSize;
                 }
                 else
                 {
                     break;
                 }
             }
-
             this.BeginReceive();
         }
         catch (SocketException ex)
