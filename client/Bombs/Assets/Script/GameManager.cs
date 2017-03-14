@@ -199,12 +199,14 @@ public class GameManager : MonoBehaviour
     {
         if (this.Player == null) return;
         Input input = null;
-        if (UnityEngine.Input.GetKeyDown(KeyCode.D))
+        if (UnityEngine.Input.GetKey(KeyCode.D))
         {
+            Debug.Log("D");
             input = new Input(this.inputSeqNum++, Time.deltaTime, Current.Id);
         }
-        else if (UnityEngine.Input.GetKeyDown(KeyCode.Z))
+        else if (UnityEngine.Input.GetKey(KeyCode.A))
         {
+            Debug.Log("A");
             input = new Input(this.inputSeqNum++, Time.deltaTime*-1, Current.Id);
         }
         else
