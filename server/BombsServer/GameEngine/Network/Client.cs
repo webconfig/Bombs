@@ -13,7 +13,10 @@ namespace GameEngine.Network
         public PlayerInfo Info;
         private int BufferSize = 1024;
         private byte[] RecvBuffer;
-        private int CurrentOffset = 0;
+        private int RecvOffset = 0;
+        private int PackOffset = 0;
+        private int PackLength = 0;
+
         public  CallBack<Client, SocketAsyncEventArgs, byte, byte[], ushort, ushort> Handle;
         private ServerIOCP server;
         private SocketAsyncEventArgs recv;
@@ -71,33 +74,45 @@ namespace GameEngine.Network
             {
                 if (recv.SocketError == SocketError.Success)
                 {
-                    Socket s = recv.AcceptSocket;
-                    int total_length = CurrentOffset + recv.BytesTransferred;
+                    //Socket s = recv.AcceptSocket;
+                    int total_length = RecvOffset + recv.BytesTransferred;
                     if (total_length > RecvBuffer.Length)
                     {//接受的数据超过缓冲区
                         Log.Debug("====接受的数据超过缓冲区====");
-                        Byte[] newBuffer = new Byte[total_length];
-                        Buffer.BlockCopy(RecvBuffer, 0, newBuffer, 0, CurrentOffset);
-                        RecvBuffer = newBuffer;
-                    }
-                    //===拷贝数据到缓存===
-                    Buffer.BlockCopy(recv.Buffer, 0, RecvBuffer, CurrentOffset, recv.BytesTransferred);
-                    CurrentOffset += recv.BytesTransferred;
-
-                    ushort DataSize, TotalSize, MsgSize;
-                    byte command;
-                    while (CurrentOffset >= 3)
-                    {
-                        DataSize = BitConverter.ToUInt16(RecvBuffer, 0);
-                        TotalSize = DataSize;
-                        if (TotalSize <= CurrentOffset)
+                        int buff_data_size = RecvOffset - PackOffset;
+                        int buff_total_size = recv.BytesTransferred + buff_data_size;
+                        if(buff_total_size > BufferSize)
                         {
-                            command = RecvBuffer[2];//命令
-                            MsgSize = (ushort)(DataSize - 3);
-                            Handle(this, recv, command, RecvBuffer, 3, MsgSize);
-                            //---删除----
-                            Array.Clear(RecvBuffer, 0, TotalSize);
-                            CurrentOffset -= TotalSize;
+                            BufferSize = buff_total_size;
+                        }
+                        Byte[] newBuffer = new Byte[BufferSize];
+                        if (buff_data_size > 0)
+                        {
+                            Buffer.BlockCopy(RecvBuffer, PackOffset, newBuffer, 0, buff_data_size);
+                        }
+                        RecvBuffer = newBuffer;
+                        PackOffset = 0;
+                        RecvOffset = buff_data_size;
+                    }
+
+                    //===拷贝数据到缓存===
+                    Buffer.BlockCopy(recv.Buffer, 0, RecvBuffer, RecvOffset, recv.BytesTransferred);
+                    RecvOffset += recv.BytesTransferred;
+                    PackLength = RecvOffset - PackOffset;//接受数据的长度
+                    //================解析数据==============
+                    ushort DataSize, MsgSize;
+                    byte command;
+                    while (PackLength >= 3)//接受数据长度必须至少包含2个字节的长度和一个字节的命令
+                    {
+                        DataSize = BitConverter.ToUInt16(RecvBuffer, PackOffset);//包长度
+                        if (DataSize <= PackLength)//包长度大于接受数据长度
+                        {
+                            command = RecvBuffer[PackOffset+2];//命令
+                            MsgSize = (ushort)(DataSize - 3);//消息体长度
+                            Handle(this, recv, command, RecvBuffer, (ushort)(PackOffset +3), MsgSize);
+                            //==========
+                            PackOffset += DataSize;
+                            PackLength = RecvOffset - PackOffset;
                         }
                         else
                         {
@@ -106,7 +121,7 @@ namespace GameEngine.Network
                     }
 
                     //为接收下一段数据，投递接收请求，这个函数有可能同步完成，这时返回false，并且不会引发SocketAsyncEventArgs.Completed事件
-                    if (!s.ReceiveAsync(recv))
+                    if (!recv.AcceptSocket.ReceiveAsync(recv))
                     {
                         // 同步接收时处理接收完成事件
                         this.ProcessReceive();
@@ -122,6 +137,7 @@ namespace GameEngine.Network
                 this.CloseReceiveSocket();
             }
         }
+
         #endregion
         #region 接收错误
         private void CloseReceiveSocket()

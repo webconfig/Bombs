@@ -7,7 +7,7 @@ namespace GameEngine
     public class Game
     {
         public List<Client> clients=new List<Client>();           // nth client also has entityId == n
-        public List<Entity> entities=new List<Entity>();          // nth entry has entityId n
+        public Dictionary<int,Entity> entities=new Dictionary<int, Entity>();          // nth entry has entityId n
         public Dictionary<int,int> lastProcessedInputSeqNums=new Dictionary<int, int>(); // last processed input's seq num, by entityId
         public List<Input> messages=new List<Input>();  // server's network (where it receives inputs from clients)
         private int tickRate = 20;
@@ -37,7 +37,7 @@ namespace GameEngine
 
             Entity entity = new Entity(entityId);
             entity.x = 5; // spawn point
-            this.entities.Add(entity);
+            this.entities.Add(entityId,entity);
         }
         /** Look for cheaters here. */
         private  bool validInput(Input input)
@@ -48,7 +48,8 @@ namespace GameEngine
             // so if you use 1/60 below you end up throwing out a lot of
             // inputs that are slighly too long... so maybe that's where 1/40
             // comes from?
-            return System.Math.Abs(input.pressTime) <= 1 / 40;
+            //return System.Math.Abs(input.pressTime) <= 1 / 40;
+            return true;
         }
         public Input receive()
         {
@@ -58,8 +59,9 @@ namespace GameEngine
                 var qm = this.messages[i];
                 //if (qm.recvTs <= now)
                 //{
-                    //this.messages.splice(i, 1);
-                    return qm;
+                //this.messages.splice(i, 1);
+                messages.RemoveAt(i);
+                return qm;
                 //}
             }
             return null;
@@ -81,6 +83,7 @@ namespace GameEngine
                 if (input==null) break;
                 if (validInput(input))//判断输入是否合法
                 {
+                    Log.Info("input======:" + input.seqNum);
                     int id = input.entityId;
                     this.entities[id].applyInput(input);
                     this.lastProcessedInputSeqNums[id] = input.seqNum;
@@ -97,9 +100,14 @@ namespace GameEngine
             // Make sure to send copies of our state, and not just references.
             // i.e. simulate serializing the data like we'd do if we were
             // using a real network.
+            List<Entity> ent_datas = new List<Entity>();
+            foreach(var item in entities)
+            {
+                ent_datas.Add(item.Value);
+            }
             var msg = new WorldState(
                 this.worldStateSeq++,
-                this.entities,
+                ent_datas,
                 this.lastProcessedInputSeqNums
             );
             var ret = new MemoryStream();
