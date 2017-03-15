@@ -11,7 +11,6 @@ namespace GameEngine
         public Dictionary<int,int> lastProcessedInputSeqNums=new Dictionary<int, int>(); // last processed input's seq num, by entityId
         public List<Input> messages=new List<Input>();  // server's network (where it receives inputs from clients)
         private int tickRate = 20;
-        private int updateTimer;
         private int worldStateSeq = 0;
 
         public void start()
@@ -25,7 +24,7 @@ namespace GameEngine
 
 
         /// <summary>
-        /// 客户端加入
+        /// 客户端加入--OK
         /// </summary>
         /// <param name="client"></param>
         public void connect(Client client)
@@ -39,8 +38,12 @@ namespace GameEngine
             entity.x = 5; // spawn point
             this.entities.Add(entityId,entity);
         }
-        /** Look for cheaters here. */
-        private  bool validInput(Input input)
+        /// <summary>
+        /// 验证输入合法性--OK
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private bool validInput(Input input)
         {
             // Not exactly sure where 1/40 comes from.  I got it from the
             // original code.  The longest possible valid "press" should be
@@ -51,36 +54,17 @@ namespace GameEngine
             //return System.Math.Abs(input.pressTime) <= 1 / 40;
             return true;
         }
-        public Input receive()
-        {
-            long now = System.DateTime.Now.Ticks;
-            for (int i = 0; i < this.messages.Count; ++i)
-            {
-                var qm = this.messages[i];
-                //if (qm.recvTs <= now)
-                //{
-                //this.messages.splice(i, 1);
-                messages.RemoveAt(i);
-                return qm;
-                //}
-            }
-            return null;
-        }
-        public void AddMessage(Input message)
-        {
-            //var m = new QueuedMessage();
-            //m.recvTs = System.DateTime.Now.Ticks;
-            //m.payload = message;
-            this.messages.Add(message);
-        }
+        /// <summary>
+        /// 处理输入---OK
+        /// </summary>
         public void processInputs()
         {
             while (true)
             {
                 var msg = receive();
-                if (msg==null) break;
+                if (msg == null) break;
                 Input input = msg as Input;
-                if (input==null) break;
+                if (input == null) break;
                 if (validInput(input))//判断输入是否合法
                 {
                     Log.Info("input======:" + input.seqNum);
@@ -90,18 +74,17 @@ namespace GameEngine
                 }
                 else
                 {
-                   Log.Error("throwing out input!");
+                    Log.Error("throwing out input!");
                 }
             }
         }
-
+        /// <summary>
+        /// 返回当前状态--OK
+        /// </summary>
         public void sendWorldState()
         {
-            // Make sure to send copies of our state, and not just references.
-            // i.e. simulate serializing the data like we'd do if we were
-            // using a real network.
             List<Entity> ent_datas = new List<Entity>();
-            foreach(var item in entities)
+            foreach (var item in entities)
             {
                 ent_datas.Add(item.Value);
             }
@@ -119,8 +102,11 @@ namespace GameEngine
                 client.Send(30, datas);
             }
         }
-
-        private bool _run = false;
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
         public void update(object source, System.Timers.ElapsedEventArgs e)
         {
             if (_run) { return; }
@@ -128,7 +114,29 @@ namespace GameEngine
             this.processInputs();
             this.sendWorldState();
             _run = false;
-            // this.render();
         }
+
+        public Input receive()
+        {
+            DateTime now = System.DateTime.Now;
+            for (int i = 0; i < this.messages.Count; ++i)
+            {
+                var qm = this.messages[i];
+                if (qm.recvTs <= now)
+                {
+                    messages.RemoveAt(i);
+                    return qm;
+                }
+            }
+            return null;
+        }
+        public void AddMessage(Input message)
+        {
+            message.recvTs = DateTime.Now.AddSeconds(message.lagMs);
+            this.messages.Add(message);
+        }
+
+
+        private bool _run = false;
     }
 }

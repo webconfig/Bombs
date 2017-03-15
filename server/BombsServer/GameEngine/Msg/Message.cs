@@ -11,6 +11,9 @@ namespace GameEngine
     {
         public float pressTime;
         public int entityId;
+        public float lagMs;
+        //=========
+        public DateTime recvTs;
         public Input() { }
         public Input(int seqNum, float pressTime, int entityId)
         {
@@ -23,12 +26,14 @@ namespace GameEngine
             w.Write(seqNum);
             w.Write(pressTime);
             w.Write(entityId);
+            w.Write(lagMs);
         }
         public void DeSerialization(BinaryReader r)
         {
             seqNum = r.ReadInt32();
             pressTime = r.ReadSingle();
             entityId = r.ReadInt32();
+            lagMs = r.ReadSingle();
         }
     }
 
