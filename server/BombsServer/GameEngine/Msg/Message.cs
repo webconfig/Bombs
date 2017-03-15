@@ -9,30 +9,24 @@ namespace GameEngine
     }
     public class Input : Message
     {
-        public float pressTime;
+        public int keycode;
         public int entityId;
         public float lagMs;
         //=========
         public DateTime recvTs;
         public Input() { }
-        public Input(int seqNum, float pressTime, int entityId)
-        {
-            this.seqNum = seqNum;
-            this.pressTime = pressTime;
-            this.entityId = entityId;
-        }
         public void Serialization(BinaryWriter w)
         {
-            w.Write(seqNum);
-            w.Write(pressTime);
             w.Write(entityId);
+            w.Write(seqNum);
+            w.Write(keycode);
             w.Write(lagMs);
         }
         public void DeSerialization(BinaryReader r)
         {
-            seqNum = r.ReadInt32();
-            pressTime = r.ReadSingle();
             entityId = r.ReadInt32();
+            seqNum = r.ReadInt32();
+            keycode = r.ReadInt32();
             lagMs = r.ReadSingle();
         }
     }

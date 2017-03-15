@@ -135,8 +135,6 @@ namespace GameEngine
             message.recvTs = DateTime.Now.AddSeconds(message.lagMs);
             this.messages.Add(message);
         }
-
-
         private bool _run = false;
     }
 }

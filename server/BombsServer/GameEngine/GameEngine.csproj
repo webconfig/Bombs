@@ -55,6 +55,7 @@
     <Compile Include="Entity.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Handlers\ClientHandler.cs" />
+    <Compile Include="KeyCode.cs" />
     <Compile Include="Math\Vector3.cs" />
     <Compile Include="Msg\Message.cs" />
     <Compile Include="Network\ConcurrentPool.cs" />
