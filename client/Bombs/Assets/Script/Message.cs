@@ -8,28 +8,24 @@ public class Message
 }
 public class Input : Message
 {
-    public float pressTime;
+    public int keycode;
     public int entityId;
     public float lagMs;
+    //=========
+    public DateTime recvTs;
     public Input() { }
-    public Input(int seqNum, float pressTime, int entityId)
-    {
-        this.seqNum = seqNum;
-        this.pressTime = pressTime;
-        this.entityId = entityId;
-    }
     public void Serialization(BinaryWriter w)
     {
-        w.Write(seqNum);
-        w.Write(pressTime);
         w.Write(entityId);
+        w.Write(seqNum);
+        w.Write(keycode);
         w.Write(lagMs);
     }
     public void DeSerialization(BinaryReader r)
     {
-        seqNum = r.ReadInt32();
-        pressTime = r.ReadSingle();
         entityId = r.ReadInt32();
+        seqNum = r.ReadInt32();
+        keycode = r.ReadInt32();
         lagMs = r.ReadSingle();
     }
 }
@@ -105,31 +101,32 @@ public class Entity
 {
     public int id;
     public float x = 0;
+    public float y = 0;
+    public float z = 0;
     public float speed = 2;
-
+    public int lastProcessedInputSeqNum = -1;
     public Entity(int id)
     {
         this.id = id;
     }
-    public Entity() { }
-    public Entity copy()
+    public Entity()
     {
-        Entity e = new Entity(this.id);
-        e.x = this.x;
-        e.speed = this.speed;
-        return e;
     }
 
     public void Serialization(BinaryWriter w)
     {
         w.Write(id);
         w.Write(x);
+        w.Write(y);
+        w.Write(z);
         w.Write(speed);
     }
     public void DeSerialization(BinaryReader r)
     {
         id = r.ReadInt32();
         x = r.ReadSingle();
+        y = r.ReadSingle();
+        z = r.ReadSingle();
         speed = r.ReadSingle();
     }
 }

@@ -104,10 +104,10 @@ public class GameManager : MonoBehaviour
                         GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         obj.name = "player";
                         NetEntity script = obj.AddComponent<NetEntity>();
+                        script.id = Current.Id;
                         this.Player = script;
                     }
-                    this.Player.x = entity.x;
-                    this.Player.speed = entity.speed;
+                    this.Player.ServerUpdate(entity);
                     if (this.useReconciliation)
                     {
                         int lastProcessed = -1;
@@ -137,21 +137,16 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     #region 其他网络玩家
-                    if (entities.ContainsKey(entity.id))
-                    {//包含
-                        NetEntity item = this.entities[entity.id];
-                        item.x = entity.x;
-                        item.speed = entity.speed;
-                    }
-                    else
-                    {//新的
+                    if (!entities.ContainsKey(entity.id))
+                    {//创建新的
                         GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         obj.name = "Other_" + entity.id;
                         NetEntity script = obj.AddComponent<NetEntity>();
                         script.id = entity.id;
-                        script.speed = entity.speed;
                         entities.Add(entity.id, script);
                     }
+                    NetEntity item = this.entities[entity.id];
+                    item.ServerUpdate(entity);
                     #endregion
                 }
             }
@@ -202,20 +197,30 @@ public class GameManager : MonoBehaviour
     {
         if (this.Player == null) return;
         Input input = null;
+        int code = 0;
         if (UnityEngine.Input.GetKey(KeyCode.D))
         {
-            input = new Input(this.inputSeqNum++, Time.fixedDeltaTime, Current.Id);
-            input.lagMs = Time.fixedDeltaTime;
+            code = (int)KeyCode.D;
         }
-        else if (UnityEngine.Input.GetKey(KeyCode.A))
+        if (UnityEngine.Input.GetKey(KeyCode.A))
         {
-            input = new Input(this.inputSeqNum++, Time.fixedDeltaTime * -1, Current.Id);
-            input.lagMs = Time.fixedDeltaTime;
+            code = (int)KeyCode.A;
         }
-        else
+        if (UnityEngine.Input.GetKey(KeyCode.W))
         {
-            return;
+            code = (int)KeyCode.W;
         }
+        if (UnityEngine.Input.GetKey(KeyCode.S))
+        {
+            code = (int)KeyCode.S;
+        }
+        if (code == 0) { return; }
+
+        input = new Input();//this.inputSeqNum++, Time.fixedDeltaTime, Current.Id
+        input.seqNum = this.inputSeqNum++;
+        input.keycode = code;
+        input.lagMs = Time.fixedDeltaTime;
+        input.entityId = Player.id;
 
         var ret = new MemoryStream();
         var w = new BinaryWriter(ret);
