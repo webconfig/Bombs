@@ -10,18 +10,22 @@ public class NetEntity : MonoBehaviour
     public float speed_old;
     public void applyInput(Input input)
     {
-        x+=input.pressTime * this.speed;
-        transform.position = new Vector3(x, 0, 0);
+        this.x += input.pressTime * this.speed;
     }
-    public void Lerp(float k)
+    public void Lerp(float interpFactor)
     {
-        x= x + (k * (x - x_old));
-        speed = speed + (k * (speed - speed_old));
+        //Debug.Log(x_old + "--" + x + "||||||" + speed_old + "--" + speed);
+        x = x + (interpFactor * (x - x_old));
+        speed = speed + (interpFactor * (speed - speed_old));
     }
-    public void SetOld()
+    public void SaveOld()
     {
         x_old = x;
         speed_old = speed;
+    }
+    public void render()
+    {
+        transform.position = new Vector3(x, 0, 0);
     }
 }
 

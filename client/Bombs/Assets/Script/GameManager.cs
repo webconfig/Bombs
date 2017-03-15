@@ -8,11 +8,15 @@ using System.IO;
 public class GameManager : MonoBehaviour
 {
     private PlayerInfo Current;
+
     private List<PlayerInfo> players=new List<PlayerInfo>();
+
     void Start()
     {
         Application.targetFrameRate = 30;
+       
     }
+
     private void OnGUI()
     {
         if (GUI.Button(new Rect(100, 150, 100, 50), "连接"))
@@ -68,15 +72,16 @@ public class GameManager : MonoBehaviour
     private bool useReconciliation = true;
     private bool useEntityInterpolation = true;
 
-    public void Update()
+    public void FixedUpdate()
     {
-        this.processServerMessages();
+        this.processServerMessages();//得到目标位置
         if (this.Player == null) return; // not connected yet
         if (this.useEntityInterpolation)
         {
-            this.interpolateEntities();
+            this.interpolateEntities();//当前位子到目标位置进行插值
         }
-        this.processInputs();
+        this.processInputs();//获取输入
+        this.render();//更新当前位置
     }
 
     public void processServerMessages()
@@ -86,52 +91,52 @@ public class GameManager : MonoBehaviour
             if (datas.Count <= 0) { break; }
             WorldState incoming = datas.Dequeue();
             if (incoming == null) { break; }
+
+            #region 更新
             for (int i = 0; i < incoming.entities.Count; ++i)
             {
                 var entity = incoming.entities[i];
                 if (entity.id == Current.Id)
-                {//当前用户
+                {//当前玩家
+                    #region 当前玩家
                     if (this.Player == null)
                     {
-                        GameObject obj = new GameObject();
+                        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         obj.name = "player";
-                        NetEntity script= obj.AddComponent<NetEntity>();
+                        NetEntity script = obj.AddComponent<NetEntity>();
                         this.Player = script;
-                        this.Player.transform.position = new Vector3(entity.x, 0, 0);
-                        this.entities[entity.id] = this.Player;
                     }
-
-                    this.Player.speed = entity.speed;
                     this.Player.x = entity.x;
-
+                    this.Player.speed = entity.speed;
                     if (this.useReconciliation)
                     {
+                        int lastProcessed = -1;
                         if (incoming.lastProcessedInputSeqNums.ContainsKey(entity.id))
                         {
-                            var lastProcessed = incoming.lastProcessedInputSeqNums[entity.id];
-                            if (lastProcessed > 0)
-                            {
-                                List<Input> result = new List<Input>();
-                                for (int j = 0; j < this.pendingInputs.Count; j++)
-                                {
-                                    if (pendingInputs[j].seqNum > lastProcessed)
-                                    {
-                                        result.Add(pendingInputs[j]);
-                                    }
-                                }
-                                pendingInputs = result;
+                            lastProcessed = incoming.lastProcessedInputSeqNums[entity.id];
+                        }
+
+                        for (int j = 0; j < this.pendingInputs.Count; j++)
+                        {
+                            if (pendingInputs[j].seqNum > lastProcessed)
+                            {//服务器没处理过
+                                this.Player.applyInput(pendingInputs[j]);
+                            }
+                            else
+                            {//服务器已经处理过的
+                                pendingInputs.RemoveAt(j);
                             }
                         }
-                        for (int k = 0; k < pendingInputs.Count; k++)
-                        {
-                            this.Player.applyInput(pendingInputs[i]);
-                        }
-                        //===============
+                    }
+                    else
+                    {
                         pendingInputs.Clear();
                     }
+                    #endregion
                 }
                 else
                 {
+                    #region 其他网络玩家
                     if (entities.ContainsKey(entity.id))
                     {//包含
                         NetEntity item = this.entities[entity.id];
@@ -140,24 +145,27 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {//新的
-                        GameObject obj = new GameObject();
-                        obj.name = "Other_"+ entity.id;
-                        obj.transform.position = new Vector3(entity.x, 0, 0);
+                        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        obj.name = "Other_" + entity.id;
                         NetEntity script = obj.AddComponent<NetEntity>();
                         script.id = entity.id;
                         script.speed = entity.speed;
                         entities.Add(entity.id, script);
                     }
+                    #endregion
                 }
             }
-            //================================
+            #endregion
+
             this.prev_Ticks = this.cur_Ticks;
             this.cur_Ticks = System.DateTime.Now.Ticks;
+            //==========插值=============
             var enumerator = entities.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                enumerator.Current.Value.SetOld();
+                enumerator.Current.Value.SaveOld();
             }
+            //Debug.Log("服务器更新：" + cur_Ticks + "----" + prev_Ticks);
         }
     }
 
@@ -166,33 +174,28 @@ public class GameManager : MonoBehaviour
         if (this.prev_Ticks < 0) return;
         if (this.cur_Ticks < 0) return;
 
+        //======计算======
         var now = System.DateTime.Now.Ticks;
-        var delta = now - cur_Ticks;
-        var statesDelta = cur_Ticks - prev_Ticks;
+        var delta = now - cur_Ticks;//当前时间和上一次服务器更新的时间差
+        var statesDelta = cur_Ticks - prev_Ticks;//服务器的时间差
+        //Debug.Log("更新：" + delta + "---" + cur_Ticks +"--"+ prev_Ticks +"--"+ statesDelta);
         float interpFactor = 0;
-        if (statesDelta == 0) { interpFactor = 0; }
+        if (statesDelta == 0) { interpFactor =1; Debug.Log("2222:" + interpFactor); }
         else
         {
-            interpFactor = delta / statesDelta;
+            interpFactor = delta*1.00f / statesDelta;
+            //Debug.Log("interpFactor:" + interpFactor);
+            if (interpFactor < 0) { Debug.Log("wwww:" + interpFactor); interpFactor = 0; }
             if (interpFactor > 1) interpFactor = 1; // If it'll let us div 0, why not
         }
+
+
+        //=======插值======
         var enumerator = entities.GetEnumerator();
         while (enumerator.MoveNext())
         {
             enumerator.Current.Value.Lerp(interpFactor);
         }
-        //WorldState prev = this.prevWorldState.value;
-        //WorldState cur = this.curWorldState.value;
-        //for (int i = 0; i < cur.entities.Count; ++i)
-        //{
-        //    var curEntity = cur.entities[i];
-        //    if (curEntity.id == Current.Id) continue; // don't interpolate self
-        //    var prevEntity = prev.entities[i]; // assumes the set of entities never changes'
-        //    var newEntity = curEntity.copy();
-        //    newEntity.x = prevEntity.x + (interpFactor * (curEntity.x - prevEntity.x));
-        //    newEntity.speed = prevEntity.speed + (interpFactor * (curEntity.speed - prevEntity.speed));
-        //    this.entities[i] = newEntity;
-        //}
     }
 
     private void processInputs()
@@ -201,13 +204,13 @@ public class GameManager : MonoBehaviour
         Input input = null;
         if (UnityEngine.Input.GetKey(KeyCode.D))
         {
-            Debug.Log("D");
-            input = new Input(this.inputSeqNum++, Time.deltaTime, Current.Id);
+            input = new Input(this.inputSeqNum++, Time.fixedDeltaTime, Current.Id);
+            input.lagMs = Time.fixedDeltaTime;
         }
         else if (UnityEngine.Input.GetKey(KeyCode.A))
         {
-            Debug.Log("A");
-            input = new Input(this.inputSeqNum++, Time.deltaTime*-1, Current.Id);
+            input = new Input(this.inputSeqNum++, Time.fixedDeltaTime * -1, Current.Id);
+            input.lagMs = Time.fixedDeltaTime;
         }
         else
         {
@@ -222,12 +225,23 @@ public class GameManager : MonoBehaviour
 
         if (this.usePrediction)
         {
+            //Debug.Log("本地输入：" + input.seqNum + "," + input.pressTime);
             this.Player.applyInput(input);
         }
 
         if (this.useReconciliation)
         {
             this.pendingInputs.Add(input);
+        }
+    }
+
+    private void render()
+    {
+        Player.render();
+        var enumerator = entities.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            enumerator.Current.Value.render();
         }
     }
 }

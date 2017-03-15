@@ -191,47 +191,6 @@ public  class Client
                     break;
                 }
             }
-
-
-            //int total_length = CurrentOffset + bytesReceived;
-            //if (total_length > RecvBuffer.Length)
-            //{//接受的数据超过缓冲区
-            //    Debug.Log("==接受的数据超过缓冲区==");
-            //    Byte[] newBuffer = new Byte[total_length];
-            //    Buffer.BlockCopy(RecvBuffer, CurrentOffset, newBuffer, 0, CurrentLength);
-            //    CurrentOffset = 0;
-            //    RecvBuffer = newBuffer;
-            //}
-
-            ////===拷贝数据到缓存===
-            //Buffer.BlockCopy(buffer, 0, RecvBuffer, CurrentOffset, bytesReceived);
-            //Debug.Log("add---"+CurrentOffset + "-" + bytesReceived);
-            ////CurrentOffset += (ushort)bytesReceived;
-            //CurrentLength += (ushort)bytesReceived;
-            //ushort DataSize, MsgSize;
-            //byte command;
-            //while (CurrentLength > 3)
-            //{
-            //    DataSize = BitConverter.ToUInt16(RecvBuffer, CurrentOffset);
-            //    if(DataSize == 0)
-            //    {
-            //        Debug.Log("===============recv error=============");
-            //        break;
-            //    }
-            //    if (DataSize <= CurrentLength)
-            //    {
-            //        command = RecvBuffer[CurrentOffset+2];//命令
-            //        MsgSize = (ushort)(DataSize - 3);
-            //        Handlers.Handle(this, command, RecvBuffer, (ushort)(DataSize + 3), MsgSize);
-            //        //---删除----
-            //        CurrentOffset += DataSize;
-            //        CurrentLength -= DataSize;
-            //    }
-            //    else
-            //    {
-            //        break;
-            //    }
-            //}
             this.BeginReceive();
         }
         catch (SocketException ex)
