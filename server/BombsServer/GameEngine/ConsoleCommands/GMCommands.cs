@@ -3,54 +3,27 @@ namespace GameEngine.Commands
 {
     public class GMCommands : ConsoleCommands
     {
+        public int CurrentGameId;
         public GMCommands()
         {
-            this.Add("shutdown", "<seconds>", "Orders all servers to shut down", HandleShutDown);
-            this.Add("auth", "<account> <level>", "Changes authority level of account", HandleAuth);
+            this.Add("game", "<seconds>", "查看游戏", HandleShutDown);
+            this.Add("list", "<account> <level>", "列出当前GameObject", HandleAuth);
             this.Add("passwd", "<account> <password>", "Changes password of account", HandlePasswd);
         }
 
         private CommandResult HandleShutDown(string command, IList<string> args)
         {
-            if (args.Count < 2)
+            if (args.Count < 1)
                 return CommandResult.InvalidArgument;
-
-            //if (LoginServer.Instance.ChannelClients.Count == 0)
-            //{
-            //    Log.Error("There are no channel servers currently running.");
-            //    return CommandResult.Okay;
-            //}
-
-            //// Get time
-            //int time;
-            //if (!int.TryParse(args[1], out time))
-            //    return CommandResult.InvalidArgument;
-
-            //time = Math2.Clamp(60, 1800, time);
-
-            //Send.ChannelShutdown(time);
-            //Log.Info("Shutdown request sent to all channel servers.");
-
+            int CurrentGameId = int.Parse(args[1]);
+            int ObjId= int.Parse(args[2]);
+            GameManager.Instance.games[CurrentGameId].ShowEntities(ObjId);
             return CommandResult.Okay;
         }
 
         private CommandResult HandleAuth(string command, IList<string> args)
         {
-            if (args.Count < 3)
-                return CommandResult.InvalidArgument;
-
-            //int level;
-            //if (!int.TryParse(args[2], out level))
-            //    return CommandResult.InvalidArgument;
-
-            //if (!LoginServer.Instance.Database.ChangeAuth(args[1], level))
-            //{
-            //    Log.Error("Failed to change auth. (Does the account exist?)");
-            //    return CommandResult.Okay;
-            //}
-
-            //Log.Info("Changed auth successfully.");
-
+            
             return CommandResult.Okay;
         }
 

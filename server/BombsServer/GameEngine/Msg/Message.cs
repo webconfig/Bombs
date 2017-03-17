@@ -33,10 +33,10 @@ namespace GameEngine
 
     public class WorldState : Message
     {
-        public List<Entity> entities;
+        public List<GameObject> entities;
         public Dictionary<int, int> lastProcessedInputSeqNums;
 
-        public WorldState(int seqNum, List<Entity> entities, Dictionary<int, int> lastProcessedInputSeqNums)
+        public WorldState(int seqNum, List<GameObject> entities, Dictionary<int, int> lastProcessedInputSeqNums)
         {
             this.seqNum = seqNum;
             this.entities = entities;
@@ -64,7 +64,7 @@ namespace GameEngine
             int count = r.ReadInt32();
             for (int i = 0; i < count; i++)
             {
-                Entity item = new Entity();
+                GameObject item = new GameObject();
                 item.DeSerialization(r);
                 entities.Add(item);
             }

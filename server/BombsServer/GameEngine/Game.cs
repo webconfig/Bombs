@@ -2,26 +2,28 @@
 using GameEngine.Network;
 using System.IO;
 using System;
+using GameEngine.Script;
 namespace GameEngine
 {
     public class Game
     {
         public List<Client> clients=new List<Client>();           // nth client also has entityId == n
-        public Dictionary<int,Entity> entities=new Dictionary<int, Entity>();          // nth entry has entityId n
+        public Dictionary<int, EntityControl> entities=new Dictionary<int, EntityControl>();          // nth entry has entityId n
         public Dictionary<int,int> lastProcessedInputSeqNums=new Dictionary<int, int>(); // last processed input's seq num, by entityId
         public List<Input> messages=new List<Input>();  // server's network (where it receives inputs from clients)
-        private int tickRate = 20;
+        private int tickRate = 10;
         private int worldStateSeq = 0;
-
+        private Skill_Manager skill_manager;
         public void start()
         {
-            System.Timers.Timer t = new System.Timers.Timer(1000 / this.tickRate);   //实例化Timer类，设置间隔时间为10000毫秒；   
+            skill_manager = new Skill_Manager();
+            skill_manager.InitSkill();
+
+            System.Timers.Timer t = new System.Timers.Timer(1000 / this.tickRate);
             t.Elapsed += new System.Timers.ElapsedEventHandler(update); //到达时间的时候执行事件；   
             t.AutoReset = true;   //设置是执行一次（false）还是一直执行(true)；   
             t.Enabled = true;     //是否执行System.Timers.Timer.Elapsed事件；   
         }
-
-
 
         /// <summary>
         /// 客户端加入--OK
@@ -29,14 +31,22 @@ namespace GameEngine
         /// <param name="client"></param>
         public void connect(Client client)
         {
-            //client.server = this;
             int entityId = client.Info.Id;
-            //client.entityId = entityId; // give the client its entity id so it can identify future state messages
             this.clients.Add(client);
 
-            Entity entity = new Entity(entityId);
-            entity.x = 5; // spawn point
-            this.entities.Add(entityId,entity);
+            GameObject entity = new GameObject(entityId);
+            EntityControl script = new EntityControl();
+            entity.AddScript(script);
+            Skill_Pool sp = new Skill_Pool();
+            entity.AddScript(sp);
+            SkillObj so = new SkillObj();
+            so.sp = sp;
+            entity.AddScript(so);
+            //======初始化技能=====
+            new Skill(50005, so, 1, skill_manager, SkillType.Normal);
+            //Skill_Manager.Instance.LoadSkills(skill_ids);加载技能需要的资源
+            entity.x = 5; // 出生点坐标
+            this.entities.Add(entityId, script);
         }
         /// <summary>
         /// 验证输入合法性--OK
@@ -61,7 +71,7 @@ namespace GameEngine
         {
             while (true)
             {
-                var msg = receive();
+                var msg = GetClientInput();
                 if (msg == null) break;
                 Input input = msg as Input;
                 if (input == null) break;
@@ -83,10 +93,10 @@ namespace GameEngine
         /// </summary>
         public void sendWorldState()
         {
-            List<Entity> ent_datas = new List<Entity>();
+            List<GameObject> ent_datas = new List<GameObject>();
             foreach (var item in entities)
             {
-                ent_datas.Add(item.Value);
+                ent_datas.Add(item.Value.entity);
             }
             var msg = new WorldState(
                 this.worldStateSeq++,
@@ -112,11 +122,20 @@ namespace GameEngine
             if (_run) { return; }
             _run = true;
             this.processInputs();
+            this.entityUpdate();
             this.sendWorldState();
             _run = false;
         }
 
-        public Input receive()
+
+        public void entityUpdate()
+        {
+            foreach (var item in entities)
+            {
+                item.Value.Update();
+            }
+        }
+        public Input GetClientInput()
         {
             DateTime now = System.DateTime.Now;
             for (int i = 0; i < this.messages.Count; ++i)
@@ -136,5 +155,11 @@ namespace GameEngine
             this.messages.Add(message);
         }
         private bool _run = false;
+
+        //===========命令=============
+        public void ShowEntities(int obj_id)
+        {
+            entities[obj_id].ShowInfo();
+        }
     }
 }
