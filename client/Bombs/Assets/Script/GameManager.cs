@@ -7,6 +7,7 @@ using google.protobuf;
 using System.IO;
 public class GameManager : MonoBehaviour
 {
+    public GameObject PlayPrefab;
     private PlayerInfo Current;
 
     private List<PlayerInfo> players=new List<PlayerInfo>();
@@ -101,15 +102,17 @@ public class GameManager : MonoBehaviour
                     #region 当前玩家
                     if (this.Player == null)
                     {
-                        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        GameObject obj = Instantiate(PlayPrefab);
                         obj.name = "player";
                         NetEntity script = obj.AddComponent<NetEntity>();
+                        script.animator = obj.GetComponent<Animator>();
                         script.id = Current.Id;
                         this.Player = script;
                     }
                     this.Player.ServerUpdate(entity);
                     if (this.useReconciliation)
                     {
+                        //======获取最后的输入序号=======
                         int lastProcessed = -1;
                         if (incoming.lastProcessedInputSeqNums.ContainsKey(entity.id))
                         {
@@ -214,8 +217,24 @@ public class GameManager : MonoBehaviour
         {
             code = (int)KeyCode.S;
         }
-        if (code == 0) { return; }
+        if (code == 0)
+        {
+            Player.StopRunAnim();
+        }
+        else
+        {
+            this.Player.StartRunAnim();
+        }
 
+
+        if (UnityEngine.Input.GetKey(KeyCode.J))
+        {
+            code = (int)KeyCode.J;
+        }
+        if (code == 0)
+        {
+            return;
+        }
         input = new Input();//this.inputSeqNum++, Time.fixedDeltaTime, Current.Id
         input.seqNum = this.inputSeqNum++;
         input.keycode = code;
