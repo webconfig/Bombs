@@ -287,6 +287,23 @@ namespace GameEngine
             //UseNumStrs.Add("result:"+UseNum.ToString());
         }
 
+        public SkillObj GetObj(string p, Skill skill)
+        {
+            if (string.Equals(p, "user"))
+            {
+                return OrigObj;
+            }
+            else if (string.Equals(p, "self"))
+            {
+                return Prev_Data;
+            }
+            else if (string.Equals(p, "get"))
+            {
+                return Prev_Data;
+            }
+            return null;
+        }
+
         //=====debug=====
         public virtual void Show()
         {

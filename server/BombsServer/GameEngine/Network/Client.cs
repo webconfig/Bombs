@@ -11,6 +11,14 @@ namespace GameEngine.Network
         public int Id;
         public int GameId;
         public PlayerInfo Info;
+        /// <summary>
+        /// 连接到服务器的时间
+        /// </summary>
+        public DateTime ConnectDateTime;
+        /// <summary>
+        /// 上一次活跃的时间
+        /// </summary>
+        public DateTime ActiveDateTime;
         private int BufferSize = 1024;
         private byte[] RecvBuffer;
         private int RecvOffset = 0;
@@ -140,7 +148,7 @@ namespace GameEngine.Network
 
         #endregion
         #region 接收错误
-        private void CloseReceiveSocket()
+        public void CloseReceiveSocket()
         {
             CloseSocket(recv.AcceptSocket);
             recv.AcceptSocket = null;

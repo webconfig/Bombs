@@ -4,8 +4,8 @@
     <clear_hit id="39000" play="auto" delay="0" lifetime="" nextids=""/>
     <set_user_state id="10" play="auto" delay="" lifetime="" nextids="" state="noaction"/>
     <set_user_state id="11" play="" delay="" lifetime="" nextids="" state="idle"/>
-    <anim_clip id="10200" play="auto" delay="" lifetime="" nextids="11" anim="Atk01" anim_end="Idle" anim_over="Idle" crossfade_time=""/>
-    <anim_clip id="10201" play="" delay="0.01" lifetime="" nextids="" anim="Hit" anim_end="Idle"  anim_over="Idle" crossfade_time=""/>
+    <anim_clip id="10200" play="auto" delay="" lifetime="2" nextids="11" obj="user" anim="Atk01" anim_end="Idle" anim_over="Idle" crossfade_time=""/>
+    <anim_clip id="10201" play="" delay="0.01" lifetime="2" nextids="" obj="get" anim="Hit" anim_end="Idle"  anim_over="Idle" crossfade_time=""/>
     <findtarget_area id="10000" play="auto" delay="0.5" lifetime="" nextids="10100" base_obj="user" position="0,0,0" range="2.65" angle="30" find_ok_ids="10601" tag="Player,player1,player2,player3" aword_repeat=""/>
     <hit id="10100" play="" delay="0" nextids="" ids="10500,10401" rank="7" ids_interrupt="10201" hit_state="hit" clear_old="" wait_time=""/>
     <effect id="10400" play="auto" delay="" lifetime="1" nextids="" model="220061" position_obj="user" position_bones="" position_offset="0,0,0" position_follow="yes" scale="1" rotation="" runid=""/>

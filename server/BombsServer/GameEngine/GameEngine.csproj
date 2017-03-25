@@ -51,8 +51,9 @@
     <Compile Include="ConsoleCommands\CommandManager.cs" />
     <Compile Include="ConsoleCommands\ConsoleCommands.cs" />
     <Compile Include="ConsoleCommands\GMCommands.cs" />
+    <Compile Include="DaemonThread.cs" />
     <Compile Include="Demo\Message.cs" />
-    <Compile Include="Game2.cs" />
+    <Compile Include="LockStepGame.cs" />
     <Compile Include="GameObject.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="Handlers\ClientHandler.cs" />
@@ -74,7 +75,9 @@
     <Compile Include="Script\ScriptBase.cs" />
     <Compile Include="Script\SkillObj.cs" />
     <Compile Include="Script\Skill_Pool.cs" />
+    <Compile Include="Script\Transfrom.cs" />
     <Compile Include="Skill\Anim\Skill_Anim_Clip.cs" />
+    <Compile Include="Skill\IDeepCopy.cs" />
     <Compile Include="Skill\Skill.cs" />
     <Compile Include="Skill\Skill_Base.cs" />
     <Compile Include="Skill\Skill_Manager.cs" />

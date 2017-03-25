@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.IO;
 namespace GameEngine.Script
 {
     public  class ScriptBase
     {
-        public int Id;
-        public ScriptState State;
-        public GameObject entity;
+        public ScriptState State= ScriptState.none;
+        public GameObject gameobject;
         public virtual void Start()
         {
 
@@ -24,6 +18,12 @@ namespace GameEngine.Script
 
         }
 
+
+        public virtual void Serialization(BinaryWriter w)
+        {
+           
+        }
+
         //==================
         public virtual void Show()
         {
@@ -32,6 +32,7 @@ namespace GameEngine.Script
     }
     public enum ScriptState
     {
+        none,
         init,
         run,
         destory

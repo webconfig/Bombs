@@ -235,7 +235,7 @@ namespace GameEngine
 
         public bool RealUse()
         {
-            //Debug.Log("使用技能：" + SkillID+"---"+owner.gameObject.name);
+            Log.Info("使用技能：" + SkillID);
             if (!skill_manager.CanUseSkill) { return false; }
             Skill_Runnging_State = SkillRunningState.Start;
             //==开始CD
@@ -244,7 +244,7 @@ namespace GameEngine
             //===运行模块====
             for (int i = 0; i < datas_start.Count; i++)
             {
-                //Skill_Manager.Instance.GetObj(datas_start[i], this).Run(null, this);
+                skill_manager.GetObj(datas_start[i], this).Run(null, this);
             }
             return true;
         }
@@ -309,7 +309,6 @@ namespace GameEngine
             data.up_ids = this.up_ids;
             data.cd_auto = this.cd_auto;
         }
-
 
         //====debug=====
         public void Show()

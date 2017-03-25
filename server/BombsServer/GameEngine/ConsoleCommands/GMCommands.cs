@@ -17,7 +17,7 @@ namespace GameEngine.Commands
                 return CommandResult.InvalidArgument;
             int CurrentGameId = int.Parse(args[1]);
             int ObjId= int.Parse(args[2]);
-            GameManager.Instance.games[CurrentGameId].ShowEntities(ObjId);
+            //GameManager.Instance.games[CurrentGameId].ShowEntities(ObjId);
             return CommandResult.Okay;
         }
 

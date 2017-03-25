@@ -57,14 +57,45 @@ namespace GameEngine.Network
         // "item" = SocketAsyncEventArgs instance to add to the pool.
         internal void Push(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("Items added to a SocketAsyncEventArgsPool cannot be null");
-            }
             lock (this.pool)
             {
                 //Console.WriteLine("SocketAsyncEventArgsPool:push");
                 this.pool.Push(item);
+            }
+        }
+    }
+
+    public class PoolList<T>
+    {
+        private List<T> m_list;
+
+        public PoolList()
+        {
+            m_list = new List<T>();
+        }
+
+        public void Add(T userToken)
+        {
+            lock (m_list)
+            {
+                m_list.Add(userToken);
+            }
+        }
+
+        public void Remove(T userToken)
+        {
+            lock (m_list)
+            {
+                m_list.Remove(userToken);
+            }
+        }
+
+        public void CopyList(ref T[] array)
+        {
+            lock (m_list)
+            {
+                array = new T[m_list.Count];
+                m_list.CopyTo(array);
             }
         }
     }

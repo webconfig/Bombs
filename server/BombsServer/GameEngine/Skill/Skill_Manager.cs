@@ -20,7 +20,7 @@ namespace GameEngine
         /// <summary>
         /// 对象池
         /// </summary>
-        public Dictionary<int, List<Skill_Base>> RunDatas = new Dictionary<int, List<Skill_Base>>();
+        public Dictionary<string, List<Skill_Base>> RunDatas = new Dictionary<string, List<Skill_Base>>();
         /// <summary>
         /// 每个模块的模板
         /// </summary>
@@ -146,6 +146,99 @@ namespace GameEngine
         {
             RunDatas.Clear();
         }
+
+        #region 获取一个模块
+        public Skill_Base GetObj(int obj_id, Skill_Base sb_now)
+        {
+            //#if UNITY_EDITOR
+            int skill_id = sb_now.OrigSkill.SkillID;
+            if (!skills.ContainsKey(skill_id))
+            {
+                Log.Error("不包含技能iD：" + skill_id);
+                return null;
+            }
+
+            if (!skills[skill_id].Datas.ContainsKey(obj_id))
+            {
+                Log.Error("技能iD：" + skill_id + "---不包含模块：" + obj_id);
+                return null;
+            }
+            //#endif
+            Skill_Base sb = null, target = null;
+            //目标类
+            target = skills[skill_id].Datas[obj_id];
+            string classtype = target.class_type;
+
+            if (RunDatas.ContainsKey(classtype))
+            {
+                List<Skill_Base> skill_base_datas = RunDatas[classtype];
+                if (skill_base_datas.Count > 0)
+                {
+                    sb = skill_base_datas[0];
+                    skill_base_datas.RemoveAt(0);
+                    target.Copy(sb);
+                    sb.OrigSkill = sb_now.OrigSkill;
+                    sb.OrigObj = sb_now.OrigObj;
+                    return sb;
+                }
+            }
+            else
+            {
+                List<Skill_Base> new_data = new List<Skill_Base>();
+                RunDatas.Add(classtype, new_data);
+            }
+            Log.Error("===== new obj!--:" + target.class_type);
+            sb = (target as IDeepCopy).DeepCopy(true);
+            sb.OrigSkill = sb_now.OrigSkill;
+            sb.OrigObj = sb_now.OrigObj;
+            return sb;
+        }
+        public Skill_Base GetObj(int obj_id, Skill OrigSkill)
+        {
+            //#if UNITY_EDITOR
+            int skill_id = OrigSkill.SkillID;
+            if (!skills.ContainsKey(skill_id))
+            {
+                Log.Error("不包含技能iD：" + skill_id);
+                return null;
+            }
+
+            if (!skills[skill_id].Datas.ContainsKey(obj_id))
+            {
+                Log.Error("技能iD：" + skill_id + "---不包含模块：" + obj_id);
+                return null;
+            }
+            //#endif
+            Skill_Base sb = null, target = null;
+            //目标类
+            target = skills[skill_id].Datas[obj_id];
+            string classtype = target.class_type;
+
+            if (RunDatas.ContainsKey(classtype))
+            {
+                List<Skill_Base> skill_base_datas = RunDatas[classtype];
+                if (skill_base_datas.Count > 0)
+                {
+                    sb = skill_base_datas[0];
+                    skill_base_datas.RemoveAt(0);
+                    target.Copy(sb);
+                    sb.OrigSkill = OrigSkill;
+                    sb.OrigObj = OrigSkill.owner;
+                    return sb;
+                }
+            }
+            else
+            {
+                List<Skill_Base> new_data = new List<Skill_Base>();
+                RunDatas.Add(classtype, new_data);
+            }
+            Log.Info("===== new obj!--:" + target.class_type);
+            sb = (target as IDeepCopy).DeepCopy(true);
+            sb.OrigSkill = OrigSkill;
+            sb.OrigObj = OrigSkill.owner;
+            return sb;
+        }
+        #endregion
         #endregion
 
         #region xml 读取

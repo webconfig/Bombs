@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,28 +9,83 @@ namespace GameEngine.Script
 {
     public class EntityControl : ScriptBase
     {
+
+        public EntityState _myState = EntityState.idle;
+        public Skill_Pool sp;
+        public float speed = 2;
+        public string anim = "";
+        public Transfrom transform;
+
+        public override void Start()
+        {
+            sp = gameobject.GetComponent<Skill_Pool>();
+            transform = gameobject.GetComponent<Transfrom>();
+        }
+
         public void applyInput(Input input)
         {
             switch ((KeyCode)input.keycode)
             {
                 case KeyCode.D:
-                    this.entity.x += input.lagMs * this.entity.speed;
+                    transform.x += input.lagMs * speed;
                     break;
                 case KeyCode.A:
-                    this.entity.x -= input.lagMs * this.entity.speed;
+                    transform.x -= input.lagMs * speed;
                     break;
                 case KeyCode.W:
-                    this.entity.z += input.lagMs * this.entity.speed;
+                    transform.z += input.lagMs * speed;
                     break;
                 case KeyCode.S:
-                    this.entity.z -= input.lagMs * this.entity.speed;
+                    transform.z -= input.lagMs * speed;
+                    break;
+                case KeyCode.J:
+                    if (_myState != EntityState.idle && 
+                        _myState != EntityState.none && 
+                        _myState != EntityState.hit&&
+                        _myState != EntityState.rudderopen && 
+                        _myState != EntityState.rudderfailure) { return; }
+                    if (!sp.skills[0].IsInCD)
+                    {
+                        sp.skills[0].DownUse();
+                    }
                     break;
             }
         }
 
-        public  void ShowInfo()
+        public override void Serialization(BinaryWriter w)
         {
-            entity.Show();
+            w.Write((byte)20);
+            w.Write(speed);
+            w.Write(anim);
         }
+
+        //==========调试=============
+        public void ShowInfo()
+        {
+            gameobject.Show();
+        }
+    }
+    public enum EntityState
+    {
+        idle,
+        Walk,
+        isatk,
+        noAction,
+        die,
+        hit,
+        win,
+        none,
+        /// <summary>
+        /// 关闭方向舵
+        /// </summary>
+        rudderfailure,
+        /// <summary>
+        /// 启用方向舵
+        /// </summary>
+        rudderopen,
+        /// <summary>
+        /// 只能走
+        /// </summary>
+        onlyrun
     }
 }

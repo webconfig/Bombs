@@ -6,10 +6,6 @@ namespace GameEngine
     public class GameObject
     {
         public int id;
-        public float x = 0;
-        public float y = 0;
-        public float z = 0;
-        public float speed = 2;
         public GameObjectState State = GameObjectState.Init;
         /// <summary>
         /// 父节点
@@ -19,10 +15,12 @@ namespace GameEngine
         /// 儿子节点
         /// </summary>
         public List<GameObject> childs = new List<GameObject>();
+
         public GameObject(int id)
         {
             this.id = id;
         }
+
         public GameObject()
         {
         }
@@ -30,25 +28,21 @@ namespace GameEngine
         public void Serialization(BinaryWriter w)
         {
             w.Write(id);
-            w.Write(x);
-            w.Write(y);
-            w.Write(z);
-            w.Write(speed);
-        }
-        public void DeSerialization(BinaryReader r)
-        {
-            id = r.ReadInt32();
-            x = r.ReadSingle();
-            y = r.ReadSingle();
-            z = r.ReadSingle();
-            speed = r.ReadSingle();
+            for (int i = 0; i < scripts.Count; i++)
+            {
+                scripts[i].Serialization(w);
+            }
         }
 
         public void Update()
         {
             for (int i = 0; i < scripts.Count; i++)
             {
-                if(scripts[i].State== ScriptState.destory)
+                if (scripts[i].State == ScriptState.none)
+                {
+                    scripts[i].Start();
+                }
+                else if (scripts[i].State== ScriptState.destory)
                 {
                     scripts.RemoveAt(i);
                     i--;
@@ -74,10 +68,24 @@ namespace GameEngine
 
         #region 脚本
         private List<ScriptBase> scripts = new List<ScriptBase>();
-        public void AddScript(ScriptBase sb)
+        public T AddComponent<T>() where T : ScriptBase, new()
         {
-            sb.entity = this;
-            scripts.Add(sb);
+            T t = new T();
+            t.State = ScriptState.none;
+            t.gameobject = this;
+            scripts.Add(t);
+            return t;
+        }
+        public T GetComponent<T>() where T : ScriptBase
+        {
+            for (int i = 0; i < scripts.Count; i++)
+            {
+                if(scripts[i] is T)
+                {
+                    return (T)scripts[i];
+                }
+            }
+            return null;
         }
         #endregion
 
@@ -87,16 +95,15 @@ namespace GameEngine
             childs.Add(obj);
         }
 
-
         //==============调试=============
         public void Show()
         {
-            Log.Info("==位置:{0},{1},{1}", x, y, z);
-            Log.Info("==脚本:");
-            for (int i = 0; i < scripts.Count; i++)
-            {
-                scripts[i].Show();
-            }
+            //Log.Info("==位置:{0},{1},{1}", x,  z);
+            //Log.Info("==脚本:");
+            //for (int i = 0; i < scripts.Count; i++)
+            //{
+            //    scripts[i].Show();
+            //}
         }
     }
 

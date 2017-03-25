@@ -2,7 +2,7 @@
 using System.Xml;
 namespace GameEngine
 {
-    public class Skill_Anim_Clip : Skill_Base
+    public class Skill_Anim_Clip : Skill_Base, IDeepCopy
     {
         /// <summary>
         /// 动画
@@ -34,6 +34,7 @@ namespace GameEngine
             Anim = data.Attributes["anim"].InnerText;
             Anim_End = data.Attributes["anim_end"].InnerText;
             Anim_Over = data.Attributes["anim_over"].InnerText;
+            obj = data.Attributes["obj"].InnerText;
             if (data.Attributes["loop"] != null)
             {
                 loop = data.Attributes["loop"].InnerText == "yes";
@@ -43,20 +44,54 @@ namespace GameEngine
                 loop = false;
             }
         }
+
         public override void SkillDealy(Skill skill)
         {
-            base.SkillDealy(skill);
+            State = SkillState.Running;
+            Prev_Data = GetObj(obj, skill);
+            Log.Info("设置动画：" + Anim);
+            Prev_Data.control.anim = Anim;
         }
 
         public override void End(Skill Skill, List<int> NotKillTags)
         {
+            if(State== SkillState.Running)
+            {
+                Prev_Data.control.anim = Anim_End;
+            }
             State = SkillState.Over;
         }
 
         public override void SkillLifeTime(Skill skill)
         {
+            if (State == SkillState.Running)
+            {
+                Log.Info("SkillLifeTime设置动画：" + Anim_Over);
+                Prev_Data.control.anim = Anim_Over;
+            }
             State = SkillState.Over;
         }
 
+        #region 拷贝对象
+        public Skill_Base DeepCopy(bool init)
+        {
+            Skill_Anim_Clip data = new Skill_Anim_Clip();
+            if (init) { this.Copy(data); }
+            return data;
+        }
+        public override void Copy(Skill_Base _data)
+        {
+            Skill_Anim_Clip data = _data as Skill_Anim_Clip;
+            base.Copy(data);
+            data.Anim = this.Anim;
+            data.Anim_End = this.Anim_End;
+            data.Anim_Over = this.Anim_Over;
+            data.obj = this.obj;
+            data.play_reset = this.play_reset;
+            data.obj = this.obj;
+            data.Anim_Over = this.Anim_Over;
+            data.loop = this.loop;
+        }
+        #endregion
     }
 }

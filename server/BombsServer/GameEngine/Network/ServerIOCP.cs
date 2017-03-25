@@ -27,11 +27,20 @@ namespace GameEngine.Network
 
         // 完成端口上进行投递所用的连接对象池
         private Pools<SocketAsyncEventArgs> acceptEventArgsPool;
+        /// <summary>
+        /// Socket最大超时时间，单位为MS
+        /// </summary>
+        public int SocketTimeOutMS=10;
+        // 
         private Pools<Client> receiveEventArgsPool;
+        public PoolList<Client> ConnedEventArgsPool;
         //=================================
         public PacketHandlerManager Handlers { get; set; }
         //==================================
-
+        /// <summary>
+        /// 检测超时客户端线程
+        /// </summary>
+        private DaemonThread m_daemonThread;
         /// <summary>
         /// 构造函数，建立一个未初始化的服务器实例
         /// </summary>
@@ -40,10 +49,11 @@ namespace GameEngine.Network
         public ServerIOCP(Int32 numConnections, Int32 bufferSize, PacketHandlerManager _Handlers)
         {
             this.numConnectedSockets = 0;
-            this.numConnections = numConnections;
-            this.bufferSize = bufferSize;
+            this.numConnections = numConnections;//设置服务器最大并发访问数
+            this.bufferSize = bufferSize;//设置接收缓存区大小
             this.Handlers = _Handlers;
             acceptEventArgsPool = new Pools<SocketAsyncEventArgs>(numConnections);
+            ConnedEventArgsPool = new PoolList<Client>();
             receiveEventArgsPool = new Pools<Client>(numConnections);
             Client.sendEventArgsPool = new Pools<SocketAsyncEventArgs>(numConnections);
 
@@ -83,6 +93,7 @@ namespace GameEngine.Network
             // 在监听Socket上投递一个接受请求。
             this.StartAccept(null);
 
+            m_daemonThread = new DaemonThread(this);//检测客户端状态，如果连接超时即关闭
             // Blocks the current thread to receive incoming messages.
             mutex.WaitOne();
         }
@@ -156,6 +167,7 @@ namespace GameEngine.Network
                 //Console.WriteLine("ProcessAccept:eventArg: {0}", eventArg.GetHashCode());
                 if (Client != null)
                 {
+                    ConnedEventArgsPool.Add(Client); //添加到正在连接列表
                     Client.StartRecv(socket);
                     // 从接受的客户端连接中取数据配置ioContext
                     Interlocked.Increment(ref this.numConnectedSockets);
@@ -189,10 +201,20 @@ namespace GameEngine.Network
 
 
         #region 异常
-        public void CloseRecv(Client Client)
+        public void CloseRecv(Client client)
         {
             Interlocked.Decrement(ref this.numConnectedSockets);
-            receiveEventArgsPool.Push(Client);
+            receiveEventArgsPool.Push(client);
+            ConnedEventArgsPool.Remove(client);//从连接到服务器的客户端列表中删除该客户端连接
+        }
+        /// <summary>
+        /// 关闭客户端连接
+        /// </summary>
+        /// <param name="userToken"></param>
+        public void CloseClientSocket(Client client)
+        {
+            client.CloseReceiveSocket();
+            CloseRecv(client);
         }
         #endregion
     }

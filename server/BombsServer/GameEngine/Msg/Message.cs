@@ -58,22 +58,22 @@ namespace GameEngine
                 w.Write(item.Value);
             }
         }
-        public void DeSerialization(BinaryReader r)
-        {
-            seqNum = r.ReadInt32();
-            int count = r.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                GameObject item = new GameObject();
-                item.DeSerialization(r);
-                entities.Add(item);
-            }
-            count = r.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                lastProcessedInputSeqNums.Add(r.ReadInt32(),r.ReadInt32());
-            }
-        }
+        //public void DeSerialization(BinaryReader r)
+        //{
+        //    seqNum = r.ReadInt32();
+        //    int count = r.ReadInt32();
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        GameObject item = new GameObject();
+        //        item.DeSerialization(r);
+        //        entities.Add(item);
+        //    }
+        //    count = r.ReadInt32();
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        lastProcessedInputSeqNums.Add(r.ReadInt32(),r.ReadInt32());
+        //    }
+        //}
     }
 
     //public class SavedWorldState

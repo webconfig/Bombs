@@ -11,7 +11,7 @@ namespace GameEngine
         public Dictionary<int, EntityControl> entities=new Dictionary<int, EntityControl>();          // nth entry has entityId n
         public Dictionary<int,int> lastProcessedInputSeqNums=new Dictionary<int, int>(); // last processed input's seq num, by entityId
         public List<Input> messages=new List<Input>();  // server's network (where it receives inputs from clients)
-        private int tickRate = 10;
+        private int tickRate = 50;
         private int worldStateSeq = 0;
         private Skill_Manager skill_manager;
         public void start()
@@ -35,17 +35,13 @@ namespace GameEngine
             this.clients.Add(client);
 
             GameObject entity = new GameObject(entityId);
-            EntityControl script = new EntityControl();
-            entity.AddScript(script);
-            Skill_Pool sp = new Skill_Pool();
-            entity.AddScript(sp);
-            SkillObj so = new SkillObj();
-            so.sp = sp;
-            entity.AddScript(so);
+            Transfrom transform= entity.AddComponent<Transfrom>();
+            EntityControl script= entity.AddComponent<EntityControl>();
+            entity.AddComponent<Skill_Pool>();
+            SkillObj so= entity.AddComponent<SkillObj>();
             //======初始化技能=====
             new Skill(50005, so, 1, skill_manager, SkillType.Normal);
-            //Skill_Manager.Instance.LoadSkills(skill_ids);加载技能需要的资源
-            entity.x = 5; // 出生点坐标
+            transform.x = 5; // 出生点坐标
             this.entities.Add(entityId, script);
         }
         /// <summary>
@@ -73,14 +69,12 @@ namespace GameEngine
             {
                 var msg = GetClientInput();
                 if (msg == null) break;
-                Input input = msg as Input;
-                if (input == null) break;
-                if (validInput(input))//判断输入是否合法
+                if (validInput(msg))//判断输入是否合法
                 {
-                    Log.Info("input======:" + input.seqNum);
-                    int id = input.entityId;
-                    this.entities[id].applyInput(input);
-                    this.lastProcessedInputSeqNums[id] = input.seqNum;
+                    Log.Info("input======:" + msg.seqNum);
+                    int id = msg.entityId;
+                    this.entities[id].applyInput(msg);
+                    this.lastProcessedInputSeqNums[id] = msg.seqNum;
                 }
                 else
                 {
@@ -96,7 +90,7 @@ namespace GameEngine
             List<GameObject> ent_datas = new List<GameObject>();
             foreach (var item in entities)
             {
-                ent_datas.Add(item.Value.entity);
+                ent_datas.Add(item.Value.gameobject);
             }
             var msg = new WorldState(
                 this.worldStateSeq++,
@@ -132,7 +126,7 @@ namespace GameEngine
         {
             foreach (var item in entities)
             {
-                item.Value.Update();
+                item.Value.gameobject.Update();
             }
         }
         public Input GetClientInput()

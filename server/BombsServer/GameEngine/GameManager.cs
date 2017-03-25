@@ -11,14 +11,16 @@ namespace GameEngine
     {
         public static readonly GameManager Instance = new GameManager();
         private ServerIOCP server;
-        public Dictionary<int, Game2> games = new Dictionary<int, Game2>();
+        public Dictionary<int, Game> games = new Dictionary<int, Game>();
 
         public void Run()
         {
-            Game2 game = new Game2();
+            //LockStepGame game = new LockStepGame();
+            //game.start();
+            //games.Add(0, game);
+            Game game = new Game();
             game.start();
             games.Add(0, game);
-
 
             ////开启服务器
             ClientHandler Handlers = new ClientHandler();
