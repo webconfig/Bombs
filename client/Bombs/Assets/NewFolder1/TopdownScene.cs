@@ -7,15 +7,15 @@ public class TopdownScene : MonoBehaviour
     private IBox player1, player2;
     public GameObject p1, p2, ground1;
     protected World World { get; set; }
-    private float cellSize=1;
+    private float cellSize=2;
     public void Start()
     {
         this.World = new World(10, 10, cellSize);
 
         //this.player1 = CreateObj(6.2f, 6.2f, 2.4f, 2.4f, "player1");
-        this.player2 = CreateObj(0, 0, 2f, 2f, "player1", out p2);// this.World.Create(10, 5, 2.4f, 2.4f).AddTags(Tags.Group1);
+        this.player2 = CreateObj(5, 5, 2.5f, 2f, "player1", out p2);// this.World.Create(10, 5, 2.4f, 2.4f).AddTags(Tags.Group1);
 
-        CreateObj(0, 2.5f, 2f, 2f, "groud1", out ground1);
+        //CreateObj(0, 2.5f, 2f, 2f, "groud1", out ground1);
         //CreateObj(28f, 24f, 20f, 20f, "groud2");
         //CreateObj(23f, 22f, 8f, 40f, "groud3");
         //// Map
@@ -92,7 +92,7 @@ public class TopdownScene : MonoBehaviour
         //spriteBatch.DrawStroke(new Rectangle(x, y, w, h), new Color(Color.White, alpha));
         //if (UnityEngine.Input.GetKey(KeyCode.Space))
         //{
-            Draw.DrawRect(new Rect(x, y-cellSize/2, w, h), Color.green);
+            Draw.DrawRect(new Rect(x, y, w, h), Color.green);
         //}
     }
 
@@ -117,7 +117,7 @@ public class TopdownScene : MonoBehaviour
     private void DrawString(string message, int x, int y, float alpha)
     {
         UnityEditor.Handles.color = Color.blue;
-        UnityEditor.Handles.Label(new Vector3(x, y, 0), message);
+        UnityEditor.Handles.Label(new Vector3(x, y+cellSize/2, 0), message);
         //Gizmos.draw
         //var size = this.font.MeasureString(message);
         //if (Keyboard.GetState().IsKeyDown(Keys.Space))
