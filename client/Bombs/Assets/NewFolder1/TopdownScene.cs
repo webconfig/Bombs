@@ -7,7 +7,7 @@ public class TopdownScene : MonoBehaviour
     private IBox player1, player2;
     public GameObject p1, p2, ground1;
     protected World World { get; set; }
-    private float cellSize=2;
+    private float cellSize=1;
     public void Start()
     {
         this.World = new World(10, 10, cellSize);
@@ -54,7 +54,10 @@ public class TopdownScene : MonoBehaviour
     public void Update()
     {
         //UpdatePlayer(this.player1, p1);
-        UpdatePlayer(this.player2, p2);
+        if (this.player2 != null)
+        {
+            UpdatePlayer(this.player2, p2);
+        }
     }
 
     private void UpdatePlayer(IBox player, GameObject p)
@@ -77,17 +80,21 @@ public class TopdownScene : MonoBehaviour
             velocity.y -= 0.1f;
         }
 
+        if (velocity == Vector2.zero) { return; }
         var move = player.Move(player.X + Time.deltaTime * 3 * velocity.x,
             player.Y + Time.deltaTime * 3 * velocity.y, (collision) => CollisionResponses.Touch);
-        p.transform.position = new Vector3(player.X+player.Width/ 2.0f, player.Y + +player.Height / 2.0f, 0);
+        p.transform.position = new Vector3(player.X + player.Width / 2.0f, player.Y + +player.Height / 2.0f, 0);
     }
 
     void OnDrawGizmos()
     {
-        var b = this.World.Bounds;
-        this.World.DrawDebug((int)b.X, (int)b.Y, (int)b.Width, (int)b.Height, DrawCell, DrawBox, DrawString);
+        if (this.World != null)
+        {
+            var b = this.World.Bounds;
+            this.World.DrawDebug((int)b.X, (int)b.Y, (int)b.Width, (int)b.Height, DrawCell, DrawBox, DrawString);
+        }
     }
-    private void DrawCell(int x, int y, int w, int h, float alpha)
+    private void DrawCell(float x, float y, float w, float h, float alpha)
     {
         //spriteBatch.DrawStroke(new Rectangle(x, y, w, h), new Color(Color.White, alpha));
         //if (UnityEngine.Input.GetKey(KeyCode.Space))
@@ -114,10 +121,10 @@ public class TopdownScene : MonoBehaviour
         var b = box.Bounds;
         Draw.DrawRect(new Rect(b.X, b.Y, b.Width, b.Height), Color.red);
     }
-    private void DrawString(string message, int x, int y, float alpha)
+    private void DrawString(string message, float x, float y, float alpha)
     {
         UnityEditor.Handles.color = Color.blue;
-        UnityEditor.Handles.Label(new Vector3(x, y+cellSize/2, 0), message);
+        UnityEditor.Handles.Label(new Vector3(x, y, 0), message);
         //Gizmos.draw
         //var size = this.font.MeasureString(message);
         //if (Keyboard.GetState().IsKeyDown(Keys.Space))

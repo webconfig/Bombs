@@ -74,29 +74,29 @@
 			  });
 		}
 
-		public IMovement Move(float x, float y, Func<ICollision, ICollisionResponse> filter)
-		{
-			var movement = this.Simulate(x, y, filter);
-			this.bounds.X = movement.Destination.X;
-			this.bounds.Y = movement.Destination.Y;
-			this.world.Update(this, movement.Origin);
-			return movement;
-		}
+        public IMovement Move(float x, float y, Func<ICollision, ICollisionResponse> filter)
+        {
+            var movement = this.Simulate(x, y, filter);
+            this.bounds.X = movement.Destination.X;
+            this.bounds.Y = movement.Destination.Y;
+            this.world.Update(this, movement.Origin);
+            return movement;
+        }
 
-		public IMovement Move(float x, float y, Func<ICollision, CollisionResponses> filter)
-		{
-			var movement = this.Simulate(x, y, filter);
-			this.bounds.X = movement.Destination.X;
-			this.bounds.Y = movement.Destination.Y;
-			this.world.Update(this, movement.Origin);
-			return movement;
-		}
+        public IMovement Move(float x, float y, Func<ICollision, CollisionResponses> filter)
+        {
+            var movement = this.Simulate(x, y, filter);
+            this.bounds.X = movement.Destination.X;
+            this.bounds.Y = movement.Destination.Y;
+            this.world.Update(this, movement.Origin);
+            return movement;
+        }
 
-		#endregion
+        #endregion
 
-		#region Tags
+        #region Tags
 
-		private Enum tags;
+        private Enum tags;
 
 		public IBox AddTags(params Enum[] newTags)
 		{

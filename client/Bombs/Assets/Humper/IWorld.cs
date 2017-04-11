@@ -107,7 +107,7 @@
 		/// <param name="drawCell">Draw cell.</param>
 		/// <param name="drawBox">Draw box.</param>
 		/// <param name="drawString">Draw string.</param>
-		void DrawDebug(int x, int y, int w, int h, Action<int, int, int, int, float> drawCell, Action<IBox> drawBox, Action<string, int, int, float> drawString);
+		void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<IBox> drawBox, Action<string, float, float, float> drawString);
 
 		#endregion
 	}

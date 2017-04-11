@@ -136,7 +136,8 @@
 
 		#endregion
 
-		#region Movements
+		
+        #region Movements
 
 		public IMovement Simulate(Box box, float x, float y, Func<ICollision, ICollisionResponse> filter)
 		{
@@ -182,7 +183,7 @@
 
 		#region Diagnostics
 
-		public void DrawDebug(int x, int y, int w, int h, Action<int,int,int,int,float> drawCell, Action<IBox> drawBox, Action<string,int,int, float> drawString)
+		public void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<IBox> drawBox, Action<string, float, float, float> drawString)
 		{
 			// Drawing boxes
 			var boxes = this.grid.QueryBoxes(x, y, w, h);
@@ -193,12 +194,15 @@
 
 			// Drawing cells
 			var cells = this.grid.QueryCells(x, y, w, h);
+            int i = 0;
 			foreach (var cell in cells)
 			{
 				var count = cell.Count();
 				var alpha = count > 0 ? 1f : 0.4f;
-				drawCell((int)cell.Bounds.X, (int)cell.Bounds.Y, (int)cell.Bounds.Width, (int)cell.Bounds.Height, alpha);
-				drawString(count.ToString(), (int)cell.Bounds.Center.X, (int)cell.Bounds.Center.Y,alpha);
+				drawCell(cell.Bounds.X, cell.Bounds.Y, cell.Bounds.Width, cell.Bounds.Height, alpha);
+                drawString(i.ToString(), cell.Bounds.X, cell.Bounds.Y, alpha);
+                drawString(count.ToString(), cell.Bounds.Center.X, cell.Bounds.Center.Y,alpha);
+                i++;
 			}
 		}
 
