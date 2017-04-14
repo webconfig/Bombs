@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
+using GameEngine.Network;
 
 namespace GameEngine.Script
 {
     public class EntityControl : ScriptBase
     {
-
+        public Client client;
         public EntityState _myState = EntityState.idle;
         public Skill_Pool sp;
         public float speed = 2;

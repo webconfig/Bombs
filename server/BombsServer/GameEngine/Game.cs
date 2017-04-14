@@ -3,85 +3,79 @@ using GameEngine.Network;
 using System.IO;
 using System;
 using GameEngine.Script;
+using Humper;
 namespace GameEngine
 {
     public class Game
     {
-        public List<Client> clients=new List<Client>();           // nth client also has entityId == n
-        public Dictionary<int, EntityControl> entities=new Dictionary<int, EntityControl>();          // nth entry has entityId n
-        public Dictionary<int,int> lastProcessedInputSeqNums=new Dictionary<int, int>(); // last processed input's seq num, by entityId
-        public List<Input> messages=new List<Input>();  // server's network (where it receives inputs from clients)
+        private bool _run = false;
+        /// <summary>
+        /// 玩家集合
+        /// </summary>
+        public Dictionary<int, EntityControl> entities = new Dictionary<int, EntityControl>();
+        #region 客户端输入
+        public List<Msg> msg_intput = new List<Msg>();
+        public List<Msg> msg_intput_add = new List<Msg>();
+        #endregion
+        /// <summary>
+        /// 输出到客户端
+        /// </summary>
+        public List<Msg> msg_output = new List<Msg>();
         private int tickRate = 50;
-        private int worldStateSeq = 0;
-        private Skill_Manager skill_manager;
+        private int Index = 0;
+        #region 物理引擎
+        private World world;
+        private int Width = 20;
+        private int Height = 20;
+        private int cellSize = 2;
+        #endregion
         public void start()
         {
-            skill_manager = new Skill_Manager();
-            skill_manager.InitSkill();
-
+            //skill_manager = new Skill_Manager();
+            //skill_manager.InitSkill();
+            world = new World(Width, Height, cellSize);//初始化物理引擎
             System.Timers.Timer t = new System.Timers.Timer(1000 / this.tickRate);
             t.Elapsed += new System.Timers.ElapsedEventHandler(update); //到达时间的时候执行事件；   
-            t.AutoReset = true;   //设置是执行一次（false）还是一直执行(true)；   
-            t.Enabled = true;     //是否执行System.Timers.Timer.Elapsed事件；   
+            t.AutoReset = true;
+            t.Enabled = true;
         }
 
-        /// <summary>
-        /// 客户端加入--OK
-        /// </summary>
-        /// <param name="client"></param>
-        public void connect(Client client)
-        {
-            int entityId = client.Info.Id;
-            this.clients.Add(client);
-
-            GameObject entity = new GameObject(entityId);
-            Transfrom transform= entity.AddComponent<Transfrom>();
-            EntityControl script= entity.AddComponent<EntityControl>();
-            entity.AddComponent<Skill_Pool>();
-            SkillObj so= entity.AddComponent<SkillObj>();
-            //======初始化技能=====
-            new Skill(50005, so, 1, skill_manager, SkillType.Normal);
-            transform.x = 5; // 出生点坐标
-            this.entities.Add(entityId, script);
-        }
-        /// <summary>
-        /// 验证输入合法性--OK
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        private bool validInput(Input input)
-        {
-            // Not exactly sure where 1/40 comes from.  I got it from the
-            // original code.  The longest possible valid "press" should be
-            // 1/client.tickRate (1/60).  But the JS timers are not reliable,
-            // so if you use 1/60 below you end up throwing out a lot of
-            // inputs that are slighly too long... so maybe that's where 1/40
-            // comes from?
-            //return System.Math.Abs(input.pressTime) <= 1 / 40;
-            return true;
-        }
         /// <summary>
         /// 处理输入---OK
         /// </summary>
         public void processInputs()
         {
-            while (true)
+
+            if (msg_intput_add.Count > 0)
             {
-                var msg = GetClientInput();
-                if (msg == null) break;
-                if (validInput(msg))//判断输入是否合法
+                lock (msg_intput_add)
                 {
-                    Log.Info("input======:" + msg.seqNum);
-                    int id = msg.entityId;
-                    this.entities[id].applyInput(msg);
-                    this.lastProcessedInputSeqNums[id] = msg.seqNum;
+                    msg_intput.AddRange(msg_intput_add);
+                    msg_intput_add.Clear();
                 }
-                else
+            }
+            Msg item;
+            for (int i = 0; i < msg_intput.Count; i++)
+            {
+                item = msg_intput[i];
+                switch (item.Data.Type)
                 {
-                    Log.Error("throwing out input!");
+                    case 0://玩家加入
+                        GameObject entity = new GameObject(item.client.Id);
+                        Transfrom transform = entity.AddComponent<Transfrom>();
+                        EntityControl script = entity.AddComponent<EntityControl>();
+                        script.client = item.client;
+                        entity.AddComponent<Skill_Pool>();
+                        SkillObj so = entity.AddComponent<SkillObj>();
+                        ////======初始化技能=====
+                        //new Skill(50005, so, 1, skill_manager, SkillType.Normal);
+                        //transform.x = 5; // 出生点坐标
+                        //this.entities.Add(entityId, script);
+                        break;
                 }
             }
         }
+
         /// <summary>
         /// 返回当前状态--OK
         /// </summary>
@@ -129,31 +123,31 @@ namespace GameEngine
                 item.Value.gameobject.Update();
             }
         }
-        public Input GetClientInput()
-        {
-            DateTime now = System.DateTime.Now;
-            for (int i = 0; i < this.messages.Count; ++i)
-            {
-                var qm = this.messages[i];
-                if (qm.recvTs <= now)
-                {
-                    messages.RemoveAt(i);
-                    return qm;
-                }
-            }
-            return null;
-        }
-        public void AddMessage(Input message)
-        {
-            message.recvTs = DateTime.Now.AddSeconds(message.lagMs);
-            this.messages.Add(message);
-        }
-        private bool _run = false;
 
-        //===========命令=============
-        public void ShowEntities(int obj_id)
+        public void AddMessage(Client client, MsgData message)
         {
-            entities[obj_id].ShowInfo();
+            lock (msg_intput_add)
+            {
+                msg_intput_add
+                    .Add(new Msg(client,message));
+            }
         }
     }
+
+    public class Msg
+    {
+        public Client client;
+        public MsgData Data;
+        public Msg(Client _client, MsgData _msg)
+        {
+            client = _client;
+            Data = _msg;
+        }
+    }
+    public class MsgData
+    {
+        public byte Type;
+        public byte[] datas;
+    }
+
 }

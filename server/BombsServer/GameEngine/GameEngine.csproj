@@ -67,6 +67,26 @@
     <Compile Include="Network\Pools.cs" />
     <Compile Include="Network\ServerIOCP.cs" />
     <Compile Include="Network\Client.cs" />
+    <Compile Include="physical\Humper\Base\Constants.cs" />
+    <Compile Include="physical\Humper\Base\Maths.cs" />
+    <Compile Include="physical\Humper\Base\RectangleF.cs" />
+    <Compile Include="physical\Humper\Base\Vector2.cs" />
+    <Compile Include="physical\Humper\Box.cs" />
+    <Compile Include="physical\Humper\Collision.cs" />
+    <Compile Include="physical\Humper\FlagsExtensions.cs" />
+    <Compile Include="physical\Humper\Grid.cs" />
+    <Compile Include="physical\Humper\Hit.cs" />
+    <Compile Include="physical\Humper\ICollision.cs" />
+    <Compile Include="physical\Humper\IWorld.cs" />
+    <Compile Include="physical\Humper\Movement.cs" />
+    <Compile Include="physical\Humper\Responses\BounceResponse.cs" />
+    <Compile Include="physical\Humper\Responses\CollisionResponse.cs" />
+    <Compile Include="physical\Humper\Responses\CollisionResponses.cs" />
+    <Compile Include="physical\Humper\Responses\CrossResponse.cs" />
+    <Compile Include="physical\Humper\Responses\ICollisionResponse.cs" />
+    <Compile Include="physical\Humper\Responses\SlideResponse.cs" />
+    <Compile Include="physical\Humper\Responses\TouchResponse.cs" />
+    <Compile Include="physical\Humper\World.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game.cs" />
@@ -91,7 +111,30 @@
     <Content Include="config\game.xml" />
     <Content Include="DLL\protobuf-net.dll" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="physical\Humper\Base.meta" />
+    <None Include="physical\Humper\Base\Constants.cs.meta" />
+    <None Include="physical\Humper\Base\Maths.cs.meta" />
+    <None Include="physical\Humper\Base\RectangleF.cs.meta" />
+    <None Include="physical\Humper\Base\Vector2.cs.meta" />
+    <None Include="physical\Humper\Box.cs.meta" />
+    <None Include="physical\Humper\Collision.cs.meta" />
+    <None Include="physical\Humper\FlagsExtensions.cs.meta" />
+    <None Include="physical\Humper\Grid.cs.meta" />
+    <None Include="physical\Humper\Hit.cs.meta" />
+    <None Include="physical\Humper\ICollision.cs.meta" />
+    <None Include="physical\Humper\IWorld.cs.meta" />
+    <None Include="physical\Humper\Movement.cs.meta" />
+    <None Include="physical\Humper\Responses.meta" />
+    <None Include="physical\Humper\Responses\BounceResponse.cs.meta" />
+    <None Include="physical\Humper\Responses\CollisionResponse.cs.meta" />
+    <None Include="physical\Humper\Responses\CollisionResponses.cs.meta" />
+    <None Include="physical\Humper\Responses\CrossResponse.cs.meta" />
+    <None Include="physical\Humper\Responses\ICollisionResponse.cs.meta" />
+    <None Include="physical\Humper\Responses\SlideResponse.cs.meta" />
+    <None Include="physical\Humper\Responses\TouchResponse.cs.meta" />
+    <None Include="physical\Humper\World.cs.meta" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
