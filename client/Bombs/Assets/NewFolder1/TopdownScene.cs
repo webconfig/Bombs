@@ -4,63 +4,37 @@ using Humper.Responses;
 using System.Collections.Generic;
 public class TopdownScene : MonoBehaviour
 {
-    private IBox player1, player2;
+    private Box player1, player2;
     public GameObject p1, p2, ground1;
     protected World World { get; set; }
     private float cellSize=1;
     public void Start()
     {
-        this.World = new World(10, 10, cellSize);
+        this.World = new World(30, 20, cellSize);
 
-        //this.player1 = CreateObj(6.2f, 6.2f, 2.4f, 2.4f, "player1");
-        this.player2 = CreateObj(5, 5, 2.5f, 2f, "player1", out p2);// this.World.Create(10, 5, 2.4f, 2.4f).AddTags(Tags.Group1);
-
-        //CreateObj(0, 2.5f, 2f, 2f, "groud1", out ground1);
-        //CreateObj(28f, 24f, 20f, 20f, "groud2");
-        //CreateObj(23f, 22f, 8f, 40f, "groud3");
-        //// Map
-        //this.World.Create(10, 10, 15, 2).AddTags(Tags.Group2);
-        //this.World.Create(18, 14, 20, 20).AddTags(Tags.Group2);
-        //this.World.Create(19, 2, 8, 40).AddTags(Tags.Group2);
-
-        //GameObject g1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //g1.name = "g1";
-        //g1.transform.position = new Vector3(10,10,0);
-        //g1.transform.localScale = new Vector3(15, 2, 1);
-        //GameObject g2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //g2.name = "g2";
-        //g2.transform.position = new Vector3(18,14, 0);
-        //g2.transform.localScale = new Vector3(20, 20, 1);
-        //GameObject g3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        //g3.name = "g3";
-        //g3.transform.position = new Vector3(19, 2,0);
-        //g3.transform.localScale = new Vector3(8, 40, 1);
-
-
-
+        this.player2 = CreateObj(0, 0, 2f, 2f, "player1", Tags.Group1, out p2);
     }
 
 
-    public IBox CreateObj(float x, float y, float width, float height, string name, out GameObject obj)
+    public Box CreateObj(float x, float y, float width, float height, string name, Tags tag, out GameObject obj)
     {
-        IBox box = this.World.Create(x, y, width, height).AddTags(Tags.Group1);
+        Box box = this.World.Create(x, y, width, height).AddTags(tag);
         obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
         obj.name = name;
-        obj.transform.position = new Vector3(x+width/2.0f, y+height/2.0f, 0);
-        obj.transform.localScale = new Vector3(width, height, 1);
+        obj.transform.position = new Vector3(x+width/2.0f, 0, y + height / 2.0f);
+        obj.transform.localScale = new Vector3(width,1 , height);
         return box;
     }
 
     public void Update()
     {
-        //UpdatePlayer(this.player1, p1);
         if (this.player2 != null)
         {
             UpdatePlayer(this.player2, p2);
         }
     }
 
-    private void UpdatePlayer(IBox player, GameObject p)
+    private void UpdatePlayer(Box player, GameObject p)
     {
         var velocity = Vector2.zero;
         if (UnityEngine.Input.GetKey(KeyCode.D))
@@ -83,7 +57,7 @@ public class TopdownScene : MonoBehaviour
         if (velocity == Vector2.zero) { return; }
         var move = player.Move(player.X + Time.deltaTime * 3 * velocity.x,
             player.Y + Time.deltaTime * 3 * velocity.y, (collision) => CollisionResponses.Touch);
-        p.transform.position = new Vector3(player.X + player.Width / 2.0f, player.Y + +player.Height / 2.0f, 0);
+        p.transform.position = new Vector3(player.X + player.Width / 2.0f, 0, player.Y + +player.Height / 2.0f);
     }
 
     void OnDrawGizmos()
@@ -96,40 +70,18 @@ public class TopdownScene : MonoBehaviour
     }
     private void DrawCell(float x, float y, float w, float h, float alpha)
     {
-        //spriteBatch.DrawStroke(new Rectangle(x, y, w, h), new Color(Color.White, alpha));
-        //if (UnityEngine.Input.GetKey(KeyCode.Space))
-        //{
-            Draw.DrawRect(new Rect(x, y, w, h), Color.green);
-        //}
+      Draw.DrawRect(new Rect(x, y, w, h), Color.green);
     }
 
-    private void DrawBox(IBox box)
+    private void DrawBox(Box box)
     {
-        //Color color;
-
-        //if (box.HasTag(Tags.Group1))
-        //    color = Color.white;
-        //else if (box.HasTag(Tags.Group3))
-        //    color = Color.red;
-        //else if (box.HasTag(Tags.Group4))
-        //    color = Color.gray;
-        //else if (box.HasTag(Tags.Group5))
-        //    color = Color.yellow;
-        //else
-        //    color = new Color(165, 155, 250);
-
         var b = box.Bounds;
         Draw.DrawRect(new Rect(b.X, b.Y, b.Width, b.Height), Color.red);
     }
     private void DrawString(string message, float x, float y, float alpha)
     {
         UnityEditor.Handles.color = Color.blue;
-        UnityEditor.Handles.Label(new Vector3(x, y, 0), message);
-        //Gizmos.draw
-        //var size = this.font.MeasureString(message);
-        //if (Keyboard.GetState().IsKeyDown(Keys.Space))
-        //    spriteBatch.DrawString(this.font, message, new Vector2(x - size.X / 2, y - size.Y / 2), new Color(Color.White, alpha));
-
+        UnityEditor.Handles.Label(new Vector3(x, 0, y), message);
     }
 }
 public enum Tags
@@ -179,11 +131,11 @@ public class Draw
     public static void DrawRect(Rect rect, Color color)
     {
         Vector3[] line = new Vector3[5];
-        line[0] = new Vector3(rect.x, rect.y, 0);
-        line[1] = new Vector3(rect.x + rect.width, rect.y, 0);
-        line[2] = new Vector3(rect.x + rect.width, rect.y + rect.height, 0);
-        line[3] = new Vector3(rect.x, rect.y + rect.height, 0);
-        line[4] = new Vector3(rect.x, rect.y, 0);
+        line[0] = new Vector3(rect.x, 0, rect.y);
+        line[1] = new Vector3(rect.x + rect.width, 0,rect.y);
+        line[2] = new Vector3(rect.x + rect.width, 0, rect.y + rect.height);
+        line[3] = new Vector3(rect.x, 0, rect.y + rect.height);
+        line[4] = new Vector3(rect.x, 0, rect.y);
         if (line != null && line.Length > 0)
         {
             DrawLineHelper(line, color, "gizmos");
