@@ -151,7 +151,6 @@ public class LockStepManager : MonoBehaviour
         input = new Input();//this.inputSeqNum++, Time.fixedDeltaTime, Current.Id
         input.seqNum = seqNum;
         input.keycode = code;
-        input.lagMs = Time.fixedDeltaTime;
         input.entityId = Current.Id;
 
         var ret = new MemoryStream();
