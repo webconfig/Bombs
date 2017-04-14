@@ -8,9 +8,9 @@ namespace Humper
 		{
 		}
 
-		public IBox Box { get; set; }
+		public Box Box { get; set; }
 
-		public IBox Other
+		public Box Other
         {
             get
             {
@@ -29,7 +29,7 @@ namespace Humper
 
 		public RectangleF Goal { get; set; }
 
-		public IHit Hit { get; set; }
+		public Hit Hit { get; set; }
 
 		public bool HasCollided
         {

@@ -19,20 +19,20 @@
 		/// <param name="y">The y coordinate.</param>
 		/// <param name="width">The width.</param>
 		/// <param name="height">The height.</param>
-		IBox Create(float x, float y, float width, float height);
+		Box Create(float x, float y, float width, float height);
 
 		/// <summary>
 		/// Remove the specified box from the world.
 		/// </summary>
 		/// <param name="box">Box.</param>
-		bool Remove(IBox box);
+		bool Remove(Box box);
 
 		/// <summary>
 		/// Update the specified box in the world (needed to be called tu update spacial hash).
 		/// </summary>
 		/// <param name="box">Box.</param>
 		/// <param name="from">From.</param>
-		void Update(IBox box, RectangleF from);
+		void Update(Box box, RectangleF from);
 
 		#endregion
 
@@ -45,13 +45,13 @@
 		/// <param name="y">The y coordinate.</param>
 		/// <param name="w">The width.</param>
 		/// <param name="h">The height.</param>
-		IEnumerable<IBox> Find(float x, float y, float w, float h);
+		IEnumerable<Box> Find(float x, float y, float w, float h);
 
 		/// <summary>
 		/// Find the boxes contained in the given area of the world.
 		/// </summary>
 		/// <param name="area">Area.</param>
-		IEnumerable<IBox> Find(RectangleF area);
+		IEnumerable<Box> Find(RectangleF area);
 
 		#endregion
 
@@ -62,7 +62,7 @@
 		/// </summary>
 		/// <param name="point">Point.</param>
 		/// <param name="ignoring">A collection of boxes that will be ignored during hit test (optionnal).</param>
-		IHit Hit(Vector2 point, IEnumerable<IBox> ignoring = null);
+		Hit Hit(Vector2 point, IEnumerable<Box> ignoring = null);
 
 		/// <summary>
 		/// Queries the world to find the nearest colliding position from an oriented segment.
@@ -70,7 +70,7 @@
 		/// <param name="origin">Origin.</param>
 		/// <param name="destination">Destination.</param>
 		/// <param name="ignoring">A collection of boxes that will be ignored during hit test (optionnal).</param>
-		IHit Hit(Vector2 origin, Vector2 destination, IEnumerable<IBox> ignoring = null);
+		Hit Hit(Vector2 origin, Vector2 destination, IEnumerable<Box> ignoring = null);
 
 		/// <summary>
 		/// Queries the world to find the nearest colliding position from a moving rectangle.
@@ -78,7 +78,7 @@
 		/// <param name="origin">Origin.</param>
 		/// <param name="destination">Destination.</param>
 		/// <param name="ignoring">Ignoring.</param>
-		IHit Hit(RectangleF origin, RectangleF destination, IEnumerable<IBox> ignoring = null);
+		Hit Hit(RectangleF origin, RectangleF destination, IEnumerable<Box> ignoring = null);
 
 		#endregion
 
@@ -91,7 +91,7 @@
 		/// <param name="x">The x coordinate.</param>
 		/// <param name="y">The y coordinate.</param>
 		/// <param name="filter">Filter.</param>
-		IMovement Simulate(Box box, float x, float y, Func<ICollision, ICollisionResponse> filter);
+		Movement Simulate(Box box, float x, float y, Func<ICollision, ICollisionResponse> filter);
 
 		#endregion
 
@@ -107,7 +107,7 @@
 		/// <param name="drawCell">Draw cell.</param>
 		/// <param name="drawBox">Draw box.</param>
 		/// <param name="drawString">Draw string.</param>
-		void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<IBox> drawBox, Action<string, float, float, float> drawString);
+		void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<Box> drawBox, Action<string, float, float, float> drawString);
 
 		#endregion
 	}

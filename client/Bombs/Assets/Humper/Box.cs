@@ -5,7 +5,7 @@
 	using Base;
 	using Responses;
 
-	public class Box : IBox
+	public class Box
 	{
 		#region Constructors 
 
@@ -54,51 +54,30 @@
             get { return Bounds.Y; }
         }
 
-		#endregion
+        #endregion
 
-		#region Movements
-
-		public IMovement Simulate(float x, float y, Func<ICollision, ICollisionResponse> filter)
-		{
-			return world.Simulate(this, x, y, filter);
-		}
-
-		public IMovement Simulate(float x, float y, Func<ICollision, CollisionResponses> filter)
-		{
-			return Move(x, y, (col) =>
-			  {
-				if (col.Hit == null)
-					  return null;
-
-				  return CollisionResponse.Create(col, filter(col));
-			  });
-		}
-
-        public IMovement Move(float x, float y, Func<ICollision, ICollisionResponse> filter)
+        #region Movements
+        public Movement Move(float x, float y, Func<ICollision, CollisionResponses> filter)
         {
-            var movement = this.Simulate(x, y, filter);
+            var movement = world.Simulate(this, x, y, (col) =>
+            {
+                if (col.Hit == null)
+                    return null;
+
+                return CollisionResponse.Create(col, filter(col));
+            });
             this.bounds.X = movement.Destination.X;
             this.bounds.Y = movement.Destination.Y;
             this.world.Update(this, movement.Origin);
             return movement;
         }
-
-        public IMovement Move(float x, float y, Func<ICollision, CollisionResponses> filter)
-        {
-            var movement = this.Simulate(x, y, filter);
-            this.bounds.X = movement.Destination.X;
-            this.bounds.Y = movement.Destination.Y;
-            this.world.Update(this, movement.Origin);
-            return movement;
-        }
-
         #endregion
 
         #region Tags
 
         private Enum tags;
 
-		public IBox AddTags(params Enum[] newTags)
+		public Box AddTags(params Enum[] newTags)
 		{
 			foreach (var tag in newTags)
 			{
@@ -108,7 +87,7 @@
 			return this;
 		}
 
-		public IBox RemoveTags(params Enum[] newTags)
+		public Box RemoveTags(params Enum[] newTags)
 		{
 			foreach (var tag in newTags)
 			{

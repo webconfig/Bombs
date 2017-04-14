@@ -4,14 +4,14 @@
 	using System.Collections.Generic;
 	using System.Linq;
 
-	public class Movement : IMovement
+	public class Movement
 	{
 		public Movement()
 		{
-			this.Hits = new IHit[0];
+			this.Hits = new List<Hit>();
 		}
 
-		public IEnumerable<IHit> Hits { get; set; }
+		public List<Hit> Hits { get; set; }
 
 		public bool HasCollided { get { return this.Hits.Any(); } }
 

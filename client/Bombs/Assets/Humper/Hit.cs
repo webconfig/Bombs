@@ -3,7 +3,7 @@
 	using System;
 	using Base;
 
-	public class Hit : IHit
+	public class Hit
 	{
 		public Hit()
 		{
@@ -11,7 +11,7 @@
 			this.Amount = 1.0f;
 		}
 
-		public IBox Box { get; set; }
+		public Box Box { get; set; }
 
 		public Vector2 Normal { get; set; }
 
@@ -23,14 +23,14 @@
 
 		#region Public functions
 
-		public static IHit Resolve(RectangleF origin, RectangleF destination, IBox other)
+		public static Hit Resolve(RectangleF origin, RectangleF destination, Box other)
 		{
 			var result = Resolve(origin,destination, other.Bounds);
 			if (result != null) result.Box = other;
 			return result;
 		}
 
-		public static IHit Resolve(Vector2 origin, Vector2 destination, IBox other)
+		public static Hit Resolve(Vector2 origin, Vector2 destination, Box other)
 		{
 			var result = Resolve(origin, destination, other.Bounds);
 			if (result != null) result.Box = other;
@@ -42,7 +42,7 @@
 			var broadphaseArea = RectangleF.Union(origin,destination);
 
 			if (broadphaseArea.Intersects(other) || broadphaseArea.Contains(other))
-			{
+			{//矩形相交或者包含
 				return ResolveNarrow(origin, destination, other);
 			}
 
@@ -64,7 +64,7 @@
 			return null;
 		}
 
-		public static IHit Resolve(Vector2 point, IBox other)
+		public static Hit Resolve(Vector2 point, Box other)
 		{
 			if (other.Bounds.Contains(point))
 			{
@@ -332,11 +332,11 @@
 				return (invEntry.X < 0.0f) || (Math.Abs(invEntry.X) < Constants.Threshold && invExit.X < 0) ? Vector2.UnitX : -Vector2.UnitX;
 			}
 
-			return (invEntry.Y < 0.0f || (Math.Abs(invEntry.Y) < Constants.Threshold && invExit.Y < 0)) ? Vector2.UnitY : -Vector2.UnitY;
+			return (invEntry.Y < 0 || (Math.Abs(invEntry.Y) < Constants.Threshold && invExit.Y < 0)) ? -Vector2.UnitY : Vector2.UnitY;
 		}
 				                            
 
-		public bool IsNearest(IHit than, Vector2 origin)
+		public bool IsNearest(Hit than, Vector2 origin)
 		{
 			if (this.Amount < than.Amount)
 			{

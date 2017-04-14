@@ -25,14 +25,14 @@
 
 		private Grid grid;
 
-		public IBox Create(float x, float y, float width, float height)
+		public Box Create(float x, float y, float width, float height)
 		{
 			var box = new Box(this, x, y, width, height);
 			this.grid.Add(box);
 			return box;
 		}
 
-		public IEnumerable<IBox> Find(float x, float y, float w, float h)
+		public IEnumerable<Box> Find(float x, float y, float w, float h)
 		{
 			x = Math.Max(0, Math.Min(x, this.Bounds.Right - w));
 			y = Math.Max(0, Math.Min(y, this.Bounds.Bottom - h));
@@ -40,17 +40,17 @@
 			return this.grid.QueryBoxes(x, y, w, h);
 		}
 
-		public IEnumerable<IBox> Find(RectangleF area)
+		public IEnumerable<Box> Find(RectangleF area)
 		{
 			return this.Find(area.X, area.Y, area.Width, area.Height);
 		}
 
-		public bool Remove(IBox box)
+		public bool Remove(Box box)
 		{
 			return this.grid.Remove(box);
 		}
 
-		public void Update(IBox box, RectangleF from)
+		public void Update(Box box, RectangleF from)
 		{
 			this.grid.Update(box, from);
 		}
@@ -59,7 +59,7 @@
 
 		#region Hits
 
-		public IHit Hit(Vector2 point, IEnumerable<IBox> ignoring = null)
+		public Hit Hit(Vector2 point, IEnumerable<Box> ignoring = null)
 		{
 			var boxes = this.Find(point.X, point.Y, 0, 0);
 
@@ -81,7 +81,7 @@
 			return null;
 		}
 
-		public IHit Hit(Vector2 origin, Vector2 destination, IEnumerable<IBox> ignoring = null)
+		public Hit Hit(Vector2 origin, Vector2 destination, IEnumerable<Box> ignoring = null)
 		{
 			var min = Vector2.Min(origin, destination);
 			var max = Vector2.Max(origin, destination);
@@ -94,7 +94,7 @@
 				boxes = boxes.Except(ignoring);
 			}
 
-			IHit nearest = null;
+			Hit nearest = null;
 
 			foreach (var other in boxes)
 			{
@@ -109,7 +109,7 @@
 			return nearest;
 		}
 
-		public IHit Hit(RectangleF origin, RectangleF destination, IEnumerable<IBox> ignoring = null)
+		public Hit Hit(RectangleF origin, RectangleF destination, IEnumerable<Box> ignoring = null)
 		{
 			var wrap = new RectangleF(origin, destination);
 			var boxes = this.Find(wrap.X, wrap.Y, wrap.Width, wrap.Height);
@@ -119,7 +119,7 @@
 				boxes = boxes.Except(ignoring);
 			}
 
-			IHit nearest = null;
+			Hit nearest = null;
 
 			foreach (var other in boxes)
 			{
@@ -139,25 +139,25 @@
 		
         #region Movements
 
-		public IMovement Simulate(Box box, float x, float y, Func<ICollision, ICollisionResponse> filter)
+		public Movement Simulate(Box box, float x, float y, Func<ICollision, ICollisionResponse> filter)
 		{
 			var origin = box.Bounds;
 			var destination = new RectangleF(x, y, box.Width, box.Height);
 
-			var hits = new List<IHit>();
+			var hits = new List<Hit>();
 
 			var result = new Movement()
 			{
 				Origin = origin,
 				Goal = destination,
-				Destination = this.Simulate(hits, new List<IBox>() { box }, box, origin, destination, filter),
+				Destination = this.Simulate(hits, new List<Box>() { box }, box, origin, destination, filter),
 				Hits = hits,
 			};
 
 			return result;
 		}
 
-		private RectangleF Simulate(List<IHit> hits, List<IBox> ignoring, Box box, RectangleF origin, RectangleF destination, Func<ICollision, ICollisionResponse> filter)
+		private RectangleF Simulate(List<Hit> hits, List<Box> ignoring, Box box, RectangleF origin, RectangleF destination, Func<ICollision, ICollisionResponse> filter)
 		{
 			var nearest = this.Hit(origin, destination, ignoring);
 				
@@ -183,7 +183,7 @@
 
 		#region Diagnostics
 
-		public void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<IBox> drawBox, Action<string, float, float, float> drawString)
+		public void DrawDebug(float x, float y, float w, float h, Action<float, float, float, float, float> drawCell, Action<Box> drawBox, Action<string, float, float, float> drawString)
 		{
 			// Drawing boxes
 			var boxes = this.grid.QueryBoxes(x, y, w, h);
@@ -200,7 +200,7 @@
 				var count = cell.Count();
 				var alpha = count > 0 ? 1f : 0.4f;
 				drawCell(cell.Bounds.X, cell.Bounds.Y, cell.Bounds.Width, cell.Bounds.Height, alpha);
-                drawString(i.ToString(), cell.Bounds.X, cell.Bounds.Y, alpha);
+                drawString(i.ToString(), cell.Bounds.X, cell.Bounds.Y+ cell.Bounds.Height, alpha);
                 drawString(count.ToString(), cell.Bounds.Center.X, cell.Bounds.Center.Y,alpha);
                 i++;
 			}

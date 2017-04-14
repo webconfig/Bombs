@@ -19,24 +19,24 @@
 
 			public RectangleF Bounds { get; private set; }
 
-			public IEnumerable<IBox> Children
+			public IEnumerable<Box> Children
             {
                 get { return this.children; }
             }
 
-			private List<IBox> children = new List<IBox>();
+			private List<Box> children = new List<Box>();
 
-			public void Add(IBox box)
+			public void Add(Box box)
 			{
 				this.children.Add(box);
 			}
 
-			public bool Contains(IBox box)
+			public bool Contains(Box box)
 			{
 				return this.children.Contains(box);
 			}
 
-			public bool Remove(IBox box)
+			public bool Remove(Box box)
 			{
 				return this.children.Remove(box);
 			}
@@ -115,14 +115,14 @@
 
 		}
 
-		public IEnumerable<IBox> QueryBoxes(float x, float y, float w, float h)
+		public IEnumerable<Box> QueryBoxes(float x, float y, float w, float h)
 		{
 			var cells = this.QueryCells(x, y, w, h);
 
 			return cells.SelectMany((cell) => cell.Children).Distinct();
 		}
 
-		public void Add(IBox box)
+		public void Add(Box box)
 		{
 			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height);
 
@@ -133,7 +133,7 @@
 			}
 		}
 
-		public void Update(IBox box, RectangleF from)
+		public void Update(Box box, RectangleF from)
 		{
 			var fromCells = this.QueryCells(from.X, from.Y, from.Width, from.Height);
 			var removed = false;
@@ -146,7 +146,7 @@
 				this.Add(box);
 		}
 
-		public bool Remove(IBox box)
+		public bool Remove(Box box)
 		{
 			var cells = this.QueryCells(box.X, box.Y, box.Width, box.Height);
 
