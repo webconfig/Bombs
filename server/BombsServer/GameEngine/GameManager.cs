@@ -15,14 +15,11 @@ namespace GameEngine
 
         public void Run()
         {
-            //LockStepGame game = new LockStepGame();
-            //game.start();
-            //games.Add(0, game);
             Game game = new Game();
-            game.start();
+            game.Start();
             games.Add(0, game);
 
-            ////开启服务器
+            //开启服务器
             ClientHandler Handlers = new ClientHandler();
             Handlers.AutoLoad();
             server = new ServerIOCP(2000, 1024, Handlers);
@@ -32,15 +29,14 @@ namespace GameEngine
             commands.Wait();
         }
 
-        public void JoinGame(Client client)
+        public void JoinGame(int game_id, Client client)
         {
-            client.GameId = 0;
-            games[0].connect(client);
+            games[game_id].PlayrJoin(client);
         }
 
-        public void GameInput(int game_id,Input input)
+        public void GameInput(int game_id, int client_id,int index, int input)
         {
-            games[game_id].AddMessage(input);
+            games[game_id].AddMessage(client_id, index,input);
         }
     }
 }

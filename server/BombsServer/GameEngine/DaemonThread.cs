@@ -13,9 +13,9 @@ namespace GameEngine
 
         public DaemonThread(ServerIOCP asyncSocketServer)
         {
-            m_asyncSocketServer = asyncSocketServer;
-            m_thread = new Thread(DaemonThreadStart);
-            m_thread.Start();
+            //m_asyncSocketServer = asyncSocketServer;
+            //m_thread = new Thread(DaemonThreadStart);
+            //m_thread.Start();
         }
 
         /// <summary>

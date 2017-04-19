@@ -171,4 +171,200 @@ namespace google.protobuf
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"GameLoading")]
+  public partial class GameLoading : global::ProtoBuf.IExtensible
+  {
+    public GameLoading() {}
+    
+    private string _GameLevelId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"GameLevelId", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public string GameLevelId
+    {
+      get { return _GameLevelId; }
+      set { _GameLevelId = value; }
+    }
+    private readonly global::System.Collections.Generic.List<google.protobuf.PlayerFightInfo> _Players = new global::System.Collections.Generic.List<google.protobuf.PlayerFightInfo>();
+    [global::ProtoBuf.ProtoMember(2, Name=@"Players", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<google.protobuf.PlayerFightInfo> Players
+    {
+      get { return _Players; }
+    }
+  
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"PlayerFightInfo")]
+  public partial class PlayerFightInfo : global::ProtoBuf.IExtensible
+  {
+    public PlayerFightInfo() {}
+    
+    private int _RoleId;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"RoleId", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int RoleId
+    {
+      get { return _RoleId; }
+      set { _RoleId = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Msgs")]
+  public partial class Msgs : global::ProtoBuf.IExtensible
+  {
+    public Msgs() {}
+    
+    private int _index;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"index", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int index
+    {
+      get { return _index; }
+      set { _index = value; }
+    }
+    private readonly global::System.Collections.Generic.List<google.protobuf.Msg> _items = new global::System.Collections.Generic.List<google.protobuf.Msg>();
+    [global::ProtoBuf.ProtoMember(2, Name=@"items", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<google.protobuf.Msg> items
+    {
+      get { return _items; }
+    }
+  
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Msg")]
+  public partial class Msg : global::ProtoBuf.IExtensible
+  {
+    public Msg() {}
+    
+    private int _client_id;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"client_id", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int client_id
+    {
+      get { return _client_id; }
+      set { _client_id = value; }
+    }
+    private int _type;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"type", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int type
+    {
+      get { return _type; }
+      set { _type = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Input")]
+  public partial class Input : global::ProtoBuf.IExtensible
+  {
+    public Input() {}
+    
+    private int _index;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"index", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int index
+    {
+      get { return _index; }
+      set { _index = value; }
+    }
+    private int _type;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"type", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int type
+    {
+      get { return _type; }
+      set { _type = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"GameData")]
+  public partial class GameData : global::ProtoBuf.IExtensible
+  {
+    public GameData() {}
+    
+    private int _index;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"index", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int index
+    {
+      get { return _index; }
+      set { _index = value; }
+    }
+    private readonly global::System.Collections.Generic.List<google.protobuf.EntityData> _entitys = new global::System.Collections.Generic.List<google.protobuf.EntityData>();
+    [global::ProtoBuf.ProtoMember(2, Name=@"entitys", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<google.protobuf.EntityData> entitys
+    {
+      get { return _entitys; }
+    }
+  
+    private readonly global::System.Collections.Generic.List<google.protobuf.Msgs> _msgs = new global::System.Collections.Generic.List<google.protobuf.Msgs>();
+    [global::ProtoBuf.ProtoMember(3, Name=@"msgs", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<google.protobuf.Msgs> msgs
+    {
+      get { return _msgs; }
+    }
+  
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"EntityData")]
+  public partial class EntityData : global::ProtoBuf.IExtensible
+  {
+    public EntityData() {}
+    
+    private int _Id;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"Id", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int Id
+    {
+      get { return _Id; }
+      set { _Id = value; }
+    }
+    private float _x;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"x", DataFormat = global::ProtoBuf.DataFormat.FixedSize)]
+    public float x
+    {
+      get { return _x; }
+      set { _x = value; }
+    }
+    private float _y;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"y", DataFormat = global::ProtoBuf.DataFormat.FixedSize)]
+    public float y
+    {
+      get { return _y; }
+      set { _y = value; }
+    }
+    private float _width;
+    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"width", DataFormat = global::ProtoBuf.DataFormat.FixedSize)]
+    public float width
+    {
+      get { return _width; }
+      set { _width = value; }
+    }
+    private float _height;
+    [global::ProtoBuf.ProtoMember(5, IsRequired = true, Name=@"height", DataFormat = global::ProtoBuf.DataFormat.FixedSize)]
+    public float height
+    {
+      get { return _height; }
+      set { _height = value; }
+    }
+    private int _tag;
+    [global::ProtoBuf.ProtoMember(6, IsRequired = true, Name=@"tag", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public int tag
+    {
+      get { return _tag; }
+      set { _tag = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
 }

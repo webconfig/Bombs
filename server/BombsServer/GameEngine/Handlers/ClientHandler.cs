@@ -26,18 +26,6 @@ namespace GameEngine
             Log.Debug("用户名：{0},密码：{1}", model_login.UserName, model_login.Password);
         }
 
-        ///// <summary>
-        ///// 查询所有房间
-        ///// </summary>
-        ///// <param name="client"></param>
-        ///// <param name="datas"></param>
-        //[PacketHandler(20)]
-        //public void GetAllGames(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
-        //{
-            
-        //}
-
-
         /// <summary>
         /// 加入房间
         /// </summary>
@@ -46,19 +34,15 @@ namespace GameEngine
         [PacketHandler(21)]
         public void JoinGame(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
         {
-            GameManager.Instance.JoinGame(client);
+            GameManager.Instance.JoinGame(0,client);
         }
 
-        [PacketHandler(40)]
+        [PacketHandler(30)]
         public void Input(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
         {
-            Input result = new Input();
-            using (MemoryStream memoryStream = new MemoryStream(datas, start, length))
-            {
-                BinaryReader binaryReader = new BinaryReader(memoryStream);
-                result.DeSerialization(binaryReader);
-            }
-            GameManager.Instance.GameInput(client.GameId, result);
+            google.protobuf.Input input_data;
+            RecvData<google.protobuf.Input>(datas, out input_data, start, length);
+            GameManager.Instance.GameInput(0,client.GameId, input_data.index, input_data.type);
         }
     }
 }

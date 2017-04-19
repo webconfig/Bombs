@@ -75,7 +75,7 @@
 
         #region Tags
 
-        private Enum tags;
+        public Enum tags;
 
 		public Box AddTags(params Enum[] newTags)
 		{

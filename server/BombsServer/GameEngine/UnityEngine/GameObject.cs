@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Collections.Generic;
-using GameEngine.Script;
-namespace GameEngine
+namespace UnityEngine
 {
     public class GameObject
     {
@@ -15,7 +14,10 @@ namespace GameEngine
         /// 儿子节点
         /// </summary>
         public List<GameObject> childs = new List<GameObject>();
-
+        /// <summary>
+        /// 空间位置
+        /// </summary>
+        public Transform transform = new Transform();
         public GameObject(int id)
         {
             this.id = id;
@@ -24,32 +26,22 @@ namespace GameEngine
         public GameObject()
         {
         }
-
-        public void Serialization(BinaryWriter w)
-        {
-            w.Write(id);
-            for (int i = 0; i < scripts.Count; i++)
-            {
-                scripts[i].Serialization(w);
-            }
-        }
-
         public void Update()
         {
             for (int i = 0; i < scripts.Count; i++)
             {
                 if (scripts[i].State == ScriptState.none)
                 {
-                    scripts[i].Start();
+                    scripts[i].StartFun();
                 }
-                else if (scripts[i].State== ScriptState.destory)
+                else if (scripts[i].State == ScriptState.destory)
                 {
                     scripts.RemoveAt(i);
                     i--;
                 }
                 else
                 {
-                    scripts[i].Update();
+                    scripts[i].UpdateFun();
                 }
             }
             for (int i = 0; i < childs.Count; i++)
@@ -67,20 +59,20 @@ namespace GameEngine
         }
 
         #region 脚本
-        private List<ScriptBase> scripts = new List<ScriptBase>();
-        public T AddComponent<T>() where T : ScriptBase, new()
+        private List<MonoBehaviour> scripts = new List<MonoBehaviour>();
+        public T AddComponent<T>() where T : MonoBehaviour, new()
         {
             T t = new T();
             t.State = ScriptState.none;
-            t.gameobject = this;
+            t.gameObject = this;
             scripts.Add(t);
             return t;
         }
-        public T GetComponent<T>() where T : ScriptBase
+        public T GetComponent<T>() where T : MonoBehaviour
         {
             for (int i = 0; i < scripts.Count; i++)
             {
-                if(scripts[i] is T)
+                if (scripts[i] is T)
                 {
                     return (T)scripts[i];
                 }
