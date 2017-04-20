@@ -3,6 +3,7 @@ using UnityEngine;
 using Humper;
 using System.Collections.Generic;
 using google.protobuf;
+using System;
 
 namespace GameEngine.Script
 {
@@ -30,7 +31,7 @@ namespace GameEngine.Script
         }
 
         #region 脚本
-        public List<MonoBehaviour> items = new List<MonoBehaviour>();
+        public List<IEntityAction> items = new List<IEntityAction>();
 
         public void LockUpdate()
         {

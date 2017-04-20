@@ -96,7 +96,7 @@ namespace GameEngine
         {
             foreach (var item in entities)
             {
-                item.Value.ActionUpdate();
+                item.Value.LockUpdate();
             }
         }
 
@@ -112,7 +112,7 @@ namespace GameEngine
                 {
                     foreach(var v in clients_add)
                     {
-                        v.Value.Send<GameData>(40, old_data);
+                        v.Value.Send<GameData>(21, old_data);
                         clients.Add(v.Key, v.Value);
                     }
                     clients_add.Clear();
@@ -131,6 +131,7 @@ namespace GameEngine
             for (int i = 0; i < msg_intput.Count; i++)
             {
                 item = msg_intput[i];
+                Log.Info("客户端输入：" + item.type + "--" + item.client_id);
                 switch (item.type)
                 {
                     case 0://玩家加入
@@ -171,7 +172,6 @@ namespace GameEngine
             //if (_index != 0 && _index != Index) { return; }//可能是客户端太卡
             lock (msg_intput_add)
             {
-
                 Msg msg = new Msg();
                 msg.client_id = client_id;
                 msg.type = type;
@@ -183,17 +183,12 @@ namespace GameEngine
         /// 玩家加入房间
         /// </summary>
         /// <param name="client"></param>
-        public void PlayrJoin(Client client)
+        public void RequestWorldData(Client client)
         {
             lock (clients_add)
             {
-                clients_add.Add(client.Id, client);
+                clients_add.Add(client.Info.Id, client);
             }
-            //AddMessage(client.Id, Index, 0);
-        }
-        public void PlayrJoinOk(Client client)
-        {
-            AddMessage(client.Id, Index, 0);
         }
         #endregion
     }

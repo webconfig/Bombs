@@ -8,7 +8,6 @@ namespace GameEngine.Network
 {
     public class Client
     {
-        public int Id;
         public int GameId;
         public PlayerInfo Info;
         /// <summary>

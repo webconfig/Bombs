@@ -23,7 +23,6 @@ namespace UnityEngine
         {
             _Update.Invoke(this, null);
         }
-        public virtual void ActionUpdate() { }
     }
     public enum ScriptState
     {

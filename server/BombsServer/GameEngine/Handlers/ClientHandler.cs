@@ -27,14 +27,18 @@ namespace GameEngine
         }
 
         /// <summary>
-        /// 加入房间
+        /// 请求world数据
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="datas"></param>
         [PacketHandler(21)]
-        public void JoinGame(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
+        public void RequestWorldData(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
         {
-            GameManager.Instance.JoinGame(0,client);
+            GameManager.Instance.RequestWorldData(0,client);
+        }
+
+        [PacketHandler(22)]
+        public void Ready(Client client, SocketAsyncEventArgs args, byte[] datas, ushort start, ushort length)
+        {
+            GameManager.Instance.GameInput(client.GameId, client.Info.Id, 0, 0);
         }
 
         [PacketHandler(30)]
@@ -42,7 +46,7 @@ namespace GameEngine
         {
             google.protobuf.Input input_data;
             RecvData<google.protobuf.Input>(datas, out input_data, start, length);
-            GameManager.Instance.GameInput(0,client.GameId, input_data.index, input_data.type);
+            GameManager.Instance.GameInput(client.GameId, client.Info.Id, input_data.index, input_data.type);
         }
     }
 }

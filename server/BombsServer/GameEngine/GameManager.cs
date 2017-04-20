@@ -29,11 +29,10 @@ namespace GameEngine
             commands.Wait();
         }
 
-        public void JoinGame(int game_id, Client client)
+        public void RequestWorldData(int game_id, Client client)
         {
-            games[game_id].PlayrJoin(client);
+            games[game_id].RequestWorldData(client);
         }
-
         public void GameInput(int game_id, int client_id,int index, int input)
         {
             games[game_id].AddMessage(client_id, index,input);

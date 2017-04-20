@@ -50,6 +50,7 @@
     <Compile Include="CallBack.cs" />
     <Compile Include="ClientScript\Script\Entity.cs" />
     <Compile Include="ClientScript\Script\ActionBase.cs" />
+    <Compile Include="ClientScript\Script\IEntityAction.cs" />
     <Compile Include="ConsoleCommands\CommandManager.cs" />
     <Compile Include="ConsoleCommands\ConsoleCommands.cs" />
     <Compile Include="ConsoleCommands\GMCommands.cs" />
