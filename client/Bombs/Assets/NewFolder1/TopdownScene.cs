@@ -80,17 +80,11 @@ public class TopdownScene : MonoBehaviour
     }
     private void DrawString(string message, float x, float y, float alpha)
     {
+#if UNITY_EDITOR
         UnityEditor.Handles.color = Color.blue;
         UnityEditor.Handles.Label(new Vector3(x, 0, y), message);
+#endif
     }
-}
-public enum Tags
-{
-    Group1 = 1 << 0,
-    Group2 = 1 << 1,
-    Group3 = 1 << 2,
-    Group4 = 1 << 3,
-    Group5 = 1 << 4,
 }
 public class Draw
 {
@@ -256,8 +250,10 @@ public static class GizmosExtentions
     }
     public static void DrawText(this Gizmos gizmos, Vector3 position, string text, Color color)
     {
+#if UNITY_EDITOR
         UnityEditor.Handles.color = color;
         UnityEditor.Handles.Label(position, text);
+#endif
     }
 
 }

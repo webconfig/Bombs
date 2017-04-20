@@ -1,86 +1,93 @@
-﻿using UnityEngine;
-using System.IO;
+﻿//using UnityEngine;
+//using System.IO;
 
-public class NetEntity : MonoBehaviour
-{
-    public int id;
-    public float x;
-    public float x_old;
-    public float z;
-    public float z_old;
-    public float speed = 2;
-    public float speed_old;
-    public string anim;
-    public string anim_old;
-    public Animator animator;
+//public class EntityControl : MonoBehaviour
+//{
+//    public Game game;
+//    public Box box;
+//    public EntityState _myState = EntityState.idle;
+//    public Skill_Pool sp;
+//    public float speed = 2;
+//    public string anim = "";
+//    public Transfrom transform;
 
+//    public void Start()
+//    {
+//        sp = gameobject.GetComponent<Skill_Pool>();
+//        transform = gameobject.GetComponent<Transfrom>();
+//    }
 
-    public void applyInput(Input input)
-    {
-        switch((KeyCode)input.keycode)
-        {
-            case KeyCode.D:
-                this.x += input.lagMs * this.speed;
-                break;
-            case KeyCode.A:
-                this.x -= input.lagMs * this.speed;
-                break;
-            case KeyCode.W:
-                this.z += input.lagMs * this.speed;
-                break;
-            case KeyCode.S:
-                this.z -= input.lagMs * this.speed;
-                break;
-        }
-        animator.SetBool("run", true);
-    }
-    public void StartRunAnim()
-    {
-        animator.SetBool("run", false);
-    }
-    public void StopRunAnim()
-    {
-        animator.SetBool("run", false);
-    }
+//    public void Init(Game _game, float x, float y, float width, float height, Tags tag)
+//    {
+//        game = _game;
+//        box = game.world.Create(x, y, width, height).AddTags(tag);
+//    }
 
-    public void Lerp(float interpFactor)
-    {
-        //Debug.Log(x_old + "--" + x + "||||||" + speed_old + "--" + speed);
-        x = x + (interpFactor * (x - x_old));
-        z = z + (interpFactor * (z - z_old));
-        speed = speed + (interpFactor * (speed - speed_old));
-    }
-    public void SaveOld()
-    {
-        x_old = x;
-        z_old = z;
-        speed_old = speed;
-    }
-    public void render()
-    {
-        transform.position = new Vector3(x, 0, z);
-        if(anim!=anim_old)
-        {
-            AnimatorStateInfo animatorInfo = animator.GetCurrentAnimatorStateInfo(0);
-            if ((!animator.IsInTransition(0)) && animatorInfo.IsName(anim))
-            {
-               
-            }
-            else
-            {
-                animator.CrossFade(anim, 0, 0, 0);
-            }
-            anim_old = anim;
-        }
-    }
-    public void ServerUpdate(Entity item)
-    {
-        x = item.x;
-        z = item.z;
-        speed = item.speed;
-        anim = item.anim;
-    }
+//    public void applyInput(int input)
+//    {
+//        switch (input)
+//        {
+//            case 1:
+//                transform.x += game.delatime * speed;
+//                break;
+//            case 2:
+//                transform.x -= game.delatime * speed;
+//                break;
+//            case 3:
+//                transform.z += game.delatime * speed;
+//                break;
+//            case 4:
+//                transform.z -= game.delatime * speed;
+//                break;
+//            case 5:
+//                if (_myState != EntityState.idle &&
+//                    _myState != EntityState.none &&
+//                    _myState != EntityState.hit &&
+//                    _myState != EntityState.rudderopen &&
+//                    _myState != EntityState.rudderfailure) { return; }
+//                if (!sp.skills[0].IsInCD)
+//                {
+//                    sp.skills[0].DownUse();
+//                }
+//                break;
+//        }
+//    }
 
-}
+//    public override void Serialization(BinaryWriter w)
+//    {
+//        w.Write((byte)20);
+//        w.Write(speed);
+//        w.Write(anim);
+//    }
+
+//    //==========调试=============
+//    public void ShowInfo()
+//    {
+//        gameobject.Show();
+//    }
+//}
+//public enum EntityState
+//{
+//    idle,
+//    Walk,
+//    isatk,
+//    noAction,
+//    die,
+//    hit,
+//    win,
+//    none,
+//    /// <summary>
+//    /// 关闭方向舵
+//    /// </summary>
+//    rudderfailure,
+//    /// <summary>
+//    /// 启用方向舵
+//    /// </summary>
+//    rudderopen,
+//    /// <summary>
+//    /// 只能走
+//    /// </summary>
+//    onlyrun
+//}
 
 
