@@ -157,3 +157,35 @@
 //        }
 //    }
 //}
+//using System.Collections.Generic;
+//public class LogServer
+//{
+//    private List<string> datas;
+//    private int tickRate = 20;
+//    public void Start()
+//    {
+//        System.Timers.Timer t = new System.Timers.Timer(1000 / this.tickRate);
+//        t.Elapsed += new System.Timers.ElapsedEventHandler(Update); 
+//        t.AutoReset = true;
+//        t.Enabled = true;
+//    }
+
+//    public void Add(string str)
+//    {
+//        lock(datas)
+//        {
+//            datas.Add(str);
+//        }
+//    }
+//    public void Update(object source, System.Timers.ElapsedEventArgs e)
+//    {
+//        lock (datas)
+//        { 
+//            if (datas.Count < 0) { return; }
+//            string str = datas[0];
+//            datas.RemoveAt(0);
+//            //===========
+//            写数据库，文件。。。。。。
+//        }
+//    }
+//}

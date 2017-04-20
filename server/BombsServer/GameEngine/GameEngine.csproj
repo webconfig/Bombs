@@ -55,7 +55,6 @@
     <Compile Include="ConsoleCommands\ConsoleCommands.cs" />
     <Compile Include="ConsoleCommands\GMCommands.cs" />
     <Compile Include="DaemonThread.cs" />
-    <Compile Include="Demo\Message.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="LockStepGame.cs" />
     <Compile Include="UnityEngine\GameObject.cs" />
@@ -64,10 +63,8 @@
     <Compile Include="KeyCode.cs" />
     <Compile Include="UnityEngine\Mathf.cs" />
     <Compile Include="UnityEngine\Vector3.cs" />
-    <Compile Include="Msg\Message.cs" />
     <Compile Include="Network\ConcurrentPool.cs" />
     <Compile Include="IdGenerator.cs" />
-    <Compile Include="Msg\MessageManager.cs" />
     <Compile Include="Network\PacketHandlerManager.cs" />
     <Compile Include="Network\Pools.cs" />
     <Compile Include="Network\ServerIOCP.cs" />
