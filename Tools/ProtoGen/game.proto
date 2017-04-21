@@ -20,7 +20,7 @@ message RooomItem {
   required int32 state=4;
 }
 
-message JoinRoomRequest {
+message RequestWorldData {
   required int32 room_id = 2;
 }
 message Players {
@@ -32,11 +32,43 @@ message PlayerInfo {
   required int32 State = 3;
 }
 message GameLoading {
-  required string GameLevelId = 2;
+  required string GameLevelId = 1;
   repeated PlayerFightInfo Players = 2;
 }
-
-
 message PlayerFightInfo {
   required int32 RoleId = 1;
+}
+
+message Msgs {
+  required int32 index = 1;
+  repeated Msg items = 2;
+}
+message Msg {
+  required int32 client_id = 1;
+  required int32 type = 2;
+}
+message Input {
+  required int32 index = 1;
+  required int32 type = 2;
+}
+//============game object============
+message GameData {
+  required int32 index = 1;
+  repeated EntityData entitys = 2;
+  repeated Msgs msgs = 3;
+  repeated ScriptData scripts = 4;
+}
+message EntityData {
+  required int32 Id = 1;
+  required float x = 2;
+  required float y = 3;
+  required float width = 4;
+  required float height = 5;
+  required int32 tag = 6;
+  repeated ScriptData scripts = 7;
+}
+//===========script==========
+message ScriptData {
+  required int32 id = 1;
+  required bytes datas = 2;
 }
