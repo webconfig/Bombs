@@ -59,9 +59,7 @@ public class LockStepManager : MonoBehaviour
     }
     void RequestWorld(int room_id)
     {
-        JoinRoomRequest request = new JoinRoomRequest();
-        request.room_id = room_id;
-        NetHelp.Send<JoinRoomRequest>(21, request, Connection.Client.socket);
+        NetHelp.Send(21,Connection.Client.socket);
     }
 
     void Update()
