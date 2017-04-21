@@ -28,11 +28,14 @@ namespace GameEngine.Script
             data.width = box.Width;
             data.height = box.Height;
             //data.tag = (int)box.tags;
+            data.scripts.AddRange(GetScriptData());
         }
 
         #region 脚本
+        /// <summary>
+        /// 逻辑脚本
+        /// </summary>
         public List<IEntityAction> items = new List<IEntityAction>();
-
         public void LockUpdate()
         {
             gameObject.transform.position = new Vector3(box.X + box.Width / 2.0f, 0, box.Y + +box.Height / 2.0f);
@@ -40,6 +43,28 @@ namespace GameEngine.Script
             {
                 items[i].ActionUpdate();
             }
+        }
+        public T AddComponent<T>() where T : MonoBehaviour, new()
+        {
+            T t = gameObject.AddComponent<T>();
+            if (t is IEntityAction)
+            {
+                items.Add(t as IEntityAction);
+            }
+            return t;
+        }
+
+        public List<ScriptData> GetScriptData()
+        {
+            List<ScriptData> result = new List<ScriptData>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                ScriptData sd = new ScriptData();
+                sd.id = ((items[i].GetType().GetCustomAttributes(typeof(ScriptAttribute), false))[0] as ScriptAttribute).id;
+                sd.datas = items[i].GetDatas();
+                result.Add(sd);
+            }
+            return result;
         }
         #endregion
     }

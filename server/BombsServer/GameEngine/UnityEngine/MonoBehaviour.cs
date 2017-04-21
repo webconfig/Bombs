@@ -8,6 +8,7 @@ namespace UnityEngine
     {
         public ScriptState State = ScriptState.none;
         public GameObject gameObject;
+        public Transform transform;
         public MethodInfo _Start, _Update;
         public void Init()
         {

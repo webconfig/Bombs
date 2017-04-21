@@ -17,9 +17,11 @@ namespace GameEngine
         public Dictionary<int, Client> clients_add = new Dictionary<int, Client>();
         private int tickRate = 20;
         private GameData old_data;
+        private long start_tick, now_tick;
         #endregion
 
         #region 客户端代码
+        public Skill_Manager skill_manager;
         /// <summary>
         /// 玩家集合
         /// </summary>
@@ -40,12 +42,17 @@ namespace GameEngine
         #endregion
         private int Index = 0;
         public float deltaTime = 0.02f;
+        public float time = 0;
         #endregion
 
         public void Start()
         {
             #region 客户端
             world = new World(Width, Height, cellSize);//初始化物理引擎
+            start_tick = System.DateTime.Now.Ticks;
+            //================================
+            skill_manager = new Skill_Manager();
+            skill_manager.SkillManagerInit();
             #endregion
             #region 服务器
             old_data = new GameData();
@@ -64,6 +71,7 @@ namespace GameEngine
         /// <param name="e"></param>
         public void Update(object source, System.Timers.ElapsedEventArgs e)
         {
+            time =(System.DateTime.Now.Ticks - start_tick) / 10000000.00f;
             if (_run) { return; }
             _run = true;
             Index++;
@@ -138,6 +146,8 @@ namespace GameEngine
                         GameObject gameobject = new GameObject();
                         PlayerControl script = gameobject.AddComponent<PlayerControl>();
                         script.Init(this, item.client_id, 0, 0, 1, 1, Tags.Group1);
+                        Skill_Pool sp = script.AddComponent<Skill_Pool>();
+
                         entities.Add(item.client_id, script);
                         players.Add(item.client_id, script);
                         break;

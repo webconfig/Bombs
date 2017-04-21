@@ -59,7 +59,7 @@ namespace UnityEngine
         }
 
         #region 脚本
-        private List<MonoBehaviour> scripts = new List<MonoBehaviour>();
+        public List<MonoBehaviour> scripts = new List<MonoBehaviour>();
         public T AddComponent<T>() where T : MonoBehaviour, new()
         {
             T t = new T();
