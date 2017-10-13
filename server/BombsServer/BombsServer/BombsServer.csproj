@@ -46,17 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\GMCommands.cs" />
-    <Compile Include="Configuration\GateConf.cs" />
-    <Compile Include="Game\RoomManager.cs" />
-    <Compile Include="Game\Room.cs" />
-    <Compile Include="BombsServer.cs" />
-    <Compile Include="Game\Script\PlayerControl.cs" />
-    <Compile Include="Network\Handlers\ClientHandler.cs" />
-    <Compile Include="Network\Player.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Game.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="proto\game.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -64,25 +57,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Comm\Comm.csproj">
-      <Project>{af161bb0-96a7-47df-a77b-61e8d1b143d5}</Project>
-      <Name>Comm</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GameEngine\GameEngine.csproj">
-      <Project>{08b94df9-a413-4ba1-9ef3-0bcafa6cb07b}</Project>
-      <Name>GameEngine</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="config\game.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="config\scene.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="scene_demo.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

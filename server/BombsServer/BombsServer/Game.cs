@@ -85,8 +85,9 @@ namespace BombsServer
     public class Entity
     {
         public int entity_id = 0;
-        public int x = 0;
-        public int speed = 2;
+        public float x = 0;
+        public float speed = 2;
+        public List<long[]> position_buffer = new List<long[]>();
 
         public void applyInput(Message msg)
         {
