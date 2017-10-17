@@ -46,10 +46,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
+    <Compile Include="comm\CallBack.cs" />
+    <Compile Include="comm\Entity.cs" />
+    <Compile Include="comm\game.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Handlers\ClientHandler.cs" />
+    <Compile Include="MmTimer.cs" />
+    <Compile Include="Network\PacketHandlerManager.cs" />
+    <Compile Include="Network\tcp\Client.cs" />
+    <Compile Include="Network\tcp\ClientManager.cs" />
+    <Compile Include="Network\tcp\NetworkFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\CliUtil.cs" />
+    <Compile Include="Util\Log.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -59,6 +69,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="DLL\protobuf-net.dll" />
     <Content Include="scene_demo.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

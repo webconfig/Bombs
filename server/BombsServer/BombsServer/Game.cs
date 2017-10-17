@@ -1,124 +1,135 @@
-﻿using System;
+﻿using google.protobuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BombsServer
+public class Game
 {
-    public class Game
+    public Dictionary<int, Client> clients = new Dictionary<int, Client>();
+    public Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
+    public Dictionary<int, int> last_processed_input = new Dictionary<int, int>();
+    /// <summary>
+    /// 客户端上传的操作
+    /// </summary>
+    public Queue<Message> messages = new Queue<Message>();
+    public int update_rate = 10;
+
+    public void Run()
     {
-        public Dictionary<int, client> clients;
-        public Dictionary<int, Entity> entities;
-        public Dictionary<int, int> last_processed_input;
+        RunTime();
+    }
 
-        /// <summary>
-        /// 网络
-        /// </summary>
-        public LagNetwork network;
+    public void Update()
+    {
+        processInputs();
+        sendWorldState();
+    }
 
-
-        public void Update()
+    /// <summary>
+    /// 处理输入
+    /// </summary>
+    public void processInputs()
+    {
+        // 处理客户端的所有待处理消息
+        while (messages.Count > 0)
         {
-            processInputs();
-            sendWorldState();
-        }
-        /// <summary>
-        /// 处理输入
-        /// </summary>
-        public void processInputs()
-        {
-            // 处理客户端的所有待处理消息
-            while (this.network.messages.Count > 0)
-            {
-                var message = this.network.messages.Dequeue();
-                // 更新其输入更新实体的状态
-                // 我们只是忽略看起来不合适的输入; 这是阻止客户作弊的原因
-                if (this.validateInput(message))
-                {
-                    var id = message.entity_id;
-                    this.entities[id].applyInput(message);
-                    this.last_processed_input[id] = message.input_sequence_number;
-                }
-
-            }
-
-            #region debug
-            //var info = "Last acknowledged input: ";
-            //for (var i = 0; i < this.clients.length; ++i)
+            var message = messages.Dequeue();
+            // 更新其输入更新实体的状态
+            // 我们只是忽略看起来不合适的输入; 这是阻止客户作弊的原因
+            //if (this.validateInput(message))
             //{
-            //    info += "Player " + i + ": #" + (this.last_processed_input[i] || 0) + "   ";
+            this.entities[message.entity_id].applyInput(message);
+            this.last_processed_input[message.entity_id] = message.input_sequence_number;
             //}
-            //this.status.textContent = info;
-            #endregion
+
         }
-        /// <summary>
-        /// 发送状态
-        /// </summary>
-        public void sendWorldState()
+
+        #region debug
+        //var info = "Last acknowledged input: ";
+        //for (var i = 0; i < this.clients.length; ++i)
+        //{
+        //    info += "Player " + i + ": #" + (this.last_processed_input[i] || 0) + "   ";
+        //}
+        //this.status.textContent = info;
+        #endregion
+    }
+    /// <summary>
+    /// 发送状态
+    /// </summary>
+    public void sendWorldState()
+    {
+        // 收集世界的状况。 在一个真实的应用程序中，可以过滤状态以避免泄露数据
+        // (例如不可见敌人的位置)
+        WorlData world = new WorlData();
+        foreach (var entity in entities.Values)
         {
-            // 收集世界的状况。 在一个真实的应用程序中，可以过滤状态以避免泄露数据
-            // (例如不可见敌人的位置)
-            List<EntityData> world_state = new List<EntityData>();
-            foreach (var entity in entities.Values)
-            {
-                EntityData ed = new EntityData();
-                ed.entity_id = entity.entity_id;
-                ed.position = entity.x;
-                ed.last_processed_input = this.last_processed_input[entity.entity_id];
-                world_state.Add(ed);
-            }
-
-            //  //将状态广播给所有客户.
-            //  for (var i = 0; i<num_clients; i++) {
-            //    var client = this.clients[i];
-            //        client.network.send(client.lag, world_state);
-            //  }
-            //}
+            EntityData ed = new EntityData();
+            ed.entity_id = entity.entity_id;
+            ed.position = entity.x;
+            ed.last_processed_input = this.last_processed_input[entity.entity_id];
+            world.datas.Add(ed);
         }
-    }
 
-    public class client
-    {
-
-    }
-    public class Entity
-    {
-        public int entity_id = 0;
-        public float x = 0;
-        public float speed = 2;
-        public List<long[]> position_buffer = new List<long[]>();
-
-        public void applyInput(Message msg)
+        foreach(var item in clients)
         {
-
+            item.Value.Send<WorlData>(2, world);
         }
-
     }
 
-    public class Vector3
+    #region 网络消息
+    /// <summary>
+    /// 登陆
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="client"></param>
+    public void ClientLogin(int id, Client client)
     {
-        public float x;
-        public float y;
-        public float z;
+        if (clients.ContainsKey(id))
+        {
+            clients[id] = client;
+            Log.Info("客户端重新连接：" + id);
+        }
+        else
+        {
+            Entity entity = new Entity();
+            entity.entity_id = id;
+            entities.Add(id, entity);
+            //==========
+            last_processed_input.Add(id, 0);
+            //===========
+            clients.Add(id, client);
+            Log.Info("新客户端加入：" + id);
+        }
+    }
+    /// <summary>
+    /// 消息
+    /// </summary>
+    /// <param name="msg"></param>
+    public void AddMessage(Message msg)
+    {
+        messages.Enqueue(msg);
+    }
+    #endregion
+
+    #region 时间
+    MmTimer timer1;
+    private void RunTime()
+    {
+
+        timer1 = new MmTimer();
+        timer1.Mode = MmTimerMode.Periodic;
+        timer1.Interval = 1000 / this.update_rate;
+        timer1.Tick += Timer1_Tick;
+        timer1.Start();
+
     }
 
-    public class LagNetwork
+    private void Timer1_Tick(object sender, EventArgs e)
     {
-        public Queue<Message> messages;
+        Update();
     }
-
-    public class Message
-    {
-        public int entity_id;
-        public int press_time;
-        public int input_sequence_number;
-    }
-    public class EntityData
-    {
-        public int entity_id;
-        public int position;
-        public int last_processed_input;
-    }
-
+    #endregion
 }
+
