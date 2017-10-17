@@ -223,8 +223,17 @@ public class main
                 var x1 = buffer[1][1] ;
                 var t0 = buffer[0][0];
                 var t1 = buffer[1][0];
-
-                entity.x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
+                float k = (render_timestamp - t0) * 1.00f / (t1 - t0);
+                Debug.Log("k:" + k);
+                entity.x = x0 + (x1 - x0) * k;
+            }
+            else
+            {
+                if (buffer.Count >= 0)
+                {
+                    entity.x = buffer[0][1];
+                }
+                Debug.Log("111111111111111:" + buffer.Count);
             }
         }
     }
