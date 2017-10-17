@@ -37,6 +37,18 @@ public class main
     {
         if (network.state == 2)
         {
+            entity_id = game.Instance.id;
+
+            Entity entity = new Entity();
+            entity.entity_id = entity_id;
+            entities.Add(entity_id, entity);
+
+            //=============
+            CreateObj(entity);
+            network.state = 3;
+        }
+        else if (network.state == 3)
+        {
             this.processServerMessages();
 
             if (this.entity_id == null)
@@ -53,10 +65,6 @@ public class main
                 this.interpolateEntities();
             }
         }
-
-        //// Render the World.
-        //renderWorld(this.canvas, this.entities);
-
     }
     /// <summary>
     /// 处理来自服务器的所有消息，即世界更新。
@@ -83,6 +91,8 @@ public class main
                     Entity entity1 = new Entity();
                     entity1.entity_id = state.entity_id;
                     this.entities[state.entity_id] = entity1;
+                    //==============
+                    CreateObj(entity1);
                 }
 
                 var entity = this.entities[state.entity_id];
@@ -129,9 +139,11 @@ public class main
                     }
                     else
                     {
+                        //Debug.Log("entity_id:" + state.entity_id + ",state.position:" + state.position);
+
                         //将其添加到位置缓冲区.
-                        var timestamp = DateTime.Now.Ticks;
-                        entity.position_buffer.Add(new long[] { timestamp, (long)(state.position * 1000) });
+
+                        entity.position_buffer.Add(new float[] { Time.time, state.position  });
                     }
                 }
             }
@@ -185,47 +197,43 @@ public class main
     public void interpolateEntities()
     {
         // 计算渲染时间戳.
-        long now = DateTime.Now.Ticks;
-        float render_timestamp = now - (1000.0f / server_update_rate);
+        float now = Time.time;
+        float render_timestamp = now - (1.00f / server_update_rate);
         foreach (var entity in entities.Values)
         {
-            //插入这个客户端的实体没有任何意义.
+            // No point in interpolating this client's entity.
             if (entity.entity_id == this.entity_id)
             {
                 continue;
             }
 
-            //找到围绕渲染时间戳的两个权威位置.
+            // Find the two authoritative positions surrounding the rendering timestamp.
             var buffer = entity.position_buffer;
 
-            //放弃旧位置.
+            // Drop older positions.
             while (buffer.Count >= 2 && buffer[1][0] <= render_timestamp)
             {
                 buffer.RemoveAt(0);
             }
 
-            //在两个周边的权威位置之间插入.
-            if (buffer.Count >= 2 && render_timestamp >= buffer[0][0] && render_timestamp <= buffer[1][0])
+            // Interpolate between the two surrounding authoritative positions.
+            if (buffer.Count >= 2 && buffer[0][0]  <= render_timestamp && render_timestamp <= buffer[1][0])
             {
-                var x0 = buffer[0][1] / 1000.00f;
+                var x0 = buffer[0][1] ;
+                var x1 = buffer[1][1] ;
                 var t0 = buffer[0][0];
-
-                var x1 = buffer[1][1] / 1000.00f;
                 var t1 = buffer[1][0];
-                float x = entity.x;
+
                 entity.x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
-                Debug.Log("inter:" + x0 + "," + x1 + "--" + t0 + "," + t1 + "----" + x + "--" + entity.x);
             }
         }
     }
 
-    public void LoginOk()
+    public void CreateObj(Entity entity)
     {
-        entity_id = game.Instance.id;
-
-        Entity entity = new Entity();
-        entity.entity_id = entity_id;
-        entities.Add(entity_id, entity);
+        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        EntityObj script = obj.AddComponent<EntityObj>();
+        script.entity = entity;
     }
 
     public void OnGUI()

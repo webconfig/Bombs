@@ -11,7 +11,7 @@ public partial class ServerHandlers : PacketHandlerManager
         CommResult ResponseModel;
         RecvData<CommResult>(datas, out ResponseModel, start, length);
         client.state = 2;
-        client.main.LoginOk();
+        //client.main.LoginOk();
     }
     [PacketHandler(2)]
     public void MsgBack(NetWork client, byte[] datas, ushort start, ushort length)
