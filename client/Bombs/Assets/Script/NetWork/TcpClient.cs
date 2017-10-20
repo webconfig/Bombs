@@ -3,25 +3,35 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Threading;
+
 public class TcpClient
 {
     private int BufferSize = 1024;
-    private byte[] RecvBuffer;
-    public object datas_obj;
+    private List<byte[]> RecvBuffer_Add;
+    private List<byte> RecvBuffer;
     private Socket socket;
     private byte[] buffer;
     public event CallBack<bool> ConnectResultEvent;
     public event CallBack DisConnectEvent;
     private int RunState = 0;
-    private int RecvOffset = 0, PackOffset = 0, PackLength = 0;
-    public float last_send = -100, Last_recv = -100;
+   
     private bool has_send = false, has_recv = false;
-    public ServerHandlers Handlers { get; set; }
+    private ServerHandlers Handlers { get; set; }
     private NetWork parent;
+
+    //===========
+    private Thread serverSocketThraed;
+    private Thread sendThraed;
+    //===========
+    public int state = 0;
+
     public TcpClient(ServerHandlers _Handle, NetWork _parent)
     {
         this.buffer = new byte[BufferSize];
-        RecvBuffer = new byte[BufferSize];
+        RecvBuffer = new List<byte>();
+        RecvBuffer_Add = new List<byte[]>();
         Handlers = _Handle;
         parent = _parent;
     }
@@ -30,20 +40,27 @@ public class TcpClient
     public void ConnectAsync(string host, int port)
     {
         CloseNetwork();
-        try
-        {
-            Debug.Log("开始连接:" + host + "," + port);
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.BeginConnect(host, port, new AsyncCallback(OnConnect), null);
-        }
-        catch
-        {
-            if (ConnectResultEvent != null)
+
+        serverSocketThraed = new Thread(() => {
+            try
             {
-                ConnectResultEvent(false);
+                Debug.Log("开始连接:" + host + "," + port);
+                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                socket.NoDelay = true;
+                socket.BeginConnect(host, port, new AsyncCallback(OnConnect), null);
             }
-            return;
-        }
+            catch
+            {
+                if (ConnectResultEvent != null)
+                {
+                    ConnectResultEvent(false);
+                }
+                return;
+            }
+        });
+        serverSocketThraed.Start();
+        sendThraed = new Thread(SendAction);
+        sendThraed.Start();
     }
     private void OnConnect(IAsyncResult result)
     {
@@ -52,6 +69,7 @@ public class TcpClient
             Debug.Log("OnConnect");
             socket.EndConnect(result);
             socket.BeginReceive(buffer, 0, buffer.Length, 0, new AsyncCallback(ProcessReceive), null);
+            state = 10;
             if (ConnectResultEvent != null)
             {
                 ConnectResultEvent(true);
@@ -59,6 +77,7 @@ public class TcpClient
         }
         catch (Exception ex)
         {
+            state = -1;
             Debug.Log("OnConnect Error:" + ex.ToString());
             if (ConnectResultEvent != null)
             {
@@ -70,6 +89,17 @@ public class TcpClient
     public void CloseNetwork()
     {
         //Debug.Log("==CloseNetwork==");
+        if (serverSocketThraed != null)
+        {
+            serverSocketThraed.Abort();
+            serverSocketThraed = null;
+        }
+        if(sendThraed!=null)
+        {
+            send_datas.Clear();
+            sendThraed.Abort();
+            sendThraed = null;
+        }
         if (socket != null)
         {
             try
@@ -102,7 +132,6 @@ public class TcpClient
     /// <param name="e"></param>
     private void ProcessReceive(IAsyncResult recv)
     {
-        //Console.WriteLine("ProcessReceive");
         // 检查远程主机是否关闭连接
         int bytesRead = socket.EndReceive(recv);
         if (bytesRead <= 0)
@@ -111,72 +140,83 @@ public class TcpClient
             Disconnect();
             return;
         }
-        //Socket s = recv.AcceptSocket;
-        int total_length = RecvOffset + bytesRead;
-        if (total_length > RecvBuffer.Length)
-        {//接受的数据超过缓冲区
-         //Log.Debug("====接受的数据超过缓冲区====");
-            int buff_data_size = RecvOffset - PackOffset;
-            int buff_total_size = bytesRead + buff_data_size;
-            if (buff_total_size > BufferSize)
-            {
-                BufferSize = buff_total_size;
-            }
-            Byte[] newBuffer = new Byte[BufferSize];
-            if (buff_data_size > 0)
-            {
-                Buffer.BlockCopy(RecvBuffer, PackOffset, newBuffer, 0, buff_data_size);
-            }
-            RecvBuffer = newBuffer;
-            PackOffset = 0;
-            RecvOffset = buff_data_size;
-        }
 
         //===拷贝数据到缓存===
-        Buffer.BlockCopy(buffer, 0, RecvBuffer, RecvOffset, bytesRead);
-        RecvOffset += bytesRead;
-        PackLength = RecvOffset - PackOffset;//接受数据的长度
-                                             //================解析数据==============
-        ushort DataSize, MsgSize;
-        byte command;
-        while (PackLength >= 3)//接受数据长度必须至少包含2个字节的长度和一个字节的命令
+        byte[] new_data = new byte[bytesRead];
+        Buffer.BlockCopy(buffer, 0, new_data, 0, bytesRead);
+        lock (RecvBuffer_Add)
         {
-            DataSize = BitConverter.ToUInt16(RecvBuffer, PackOffset);//包长度
-            if (DataSize <= PackLength)//包长度大于接受数据长度
-            {
-                command = RecvBuffer[PackOffset + 2];//命令
-                MsgSize = (ushort)(DataSize - 3);//消息体长度
-                //Debug.Log("命令：" + command);
-                Handlers.Handle(parent, command, RecvBuffer, (ushort)(PackOffset + 3), MsgSize);
-                //==========
-                PackOffset += DataSize;
-                PackLength = RecvOffset - PackOffset;
-            }
-            else
-            {
-                break;
-            }
+            RecvBuffer_Add.Add(new_data);
         }
 
-        if (RunState != -100)
+        try
         {
-            try
+            socket.BeginReceive(buffer, 0, buffer.Length, 0, new AsyncCallback(ProcessReceive), null);
+        }
+        catch
+        {
+            Disconnect();
+        }
+    }
+    /// <summary>
+    /// 处理数据
+    /// </summary>
+    private void DealData()
+    {
+        if (RecvBuffer_Add.Count > 0)
+        {
+            lock (RecvBuffer_Add)
             {
-                socket.BeginReceive(buffer, 0, buffer.Length, 0, new AsyncCallback(ProcessReceive), null);
-            }
-            catch
-            {
-                Disconnect();
+                for (int i = 0; i < RecvBuffer_Add.Count; i++)
+                {
+                    for (int j = 0; j < RecvBuffer_Add[i].Length; j++)
+                    {
+                        RecvBuffer.Add(RecvBuffer_Add[i][j]);
+                    }
+                }
+                RecvBuffer_Add.Clear();
             }
         }
-        else
+        if (RecvBuffer.Count >= 3)
         {
-            Debug.Log("断开连接后无法接受数据");
+            int DataSize = 0, MsgSize;
+            byte command;
+            while (RecvBuffer.Count >= 3)//接受数据长度必须至少包含2个字节的长度和一个字节的命令
+            {
+                DataSize = 0;
+                BytesToInt(RecvBuffer, 0, ref DataSize);//包长度
+                //Debug.Log("包长度:" + DataSize);
+                if (DataSize <= RecvBuffer.Count)//包长度大于接受数据长度
+                {
+                    command = RecvBuffer[2];//命令
+                    MsgSize = (ushort)(DataSize - 3);//消息体长度
+
+                    byte[] msgBytes = new byte[MsgSize];
+                    RecvBuffer.CopyTo(3, msgBytes, 0, msgBytes.Length);
+                    RecvBuffer.RemoveRange(0, DataSize);
+                    Handlers.Handle(parent, command, msgBytes);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    public void BytesToInt(List<byte> data, int offset, ref int num)
+    {
+        for (int i = offset; i < offset +1; i++)
+        {
+            num <<= 8;
+            num |= (data[i] & 0xff);
         }
     }
     #endregion
 
     #region 发送
+    public List<byte[]> send_datas_add = new List<byte[]>();
+    public List<byte[]> send_datas = new List<byte[]>();
     public void Send<T>(byte type, T t)
     {
         byte[] msg;
@@ -195,17 +235,7 @@ public class TcpClient
         total_length_bytes.CopyTo(data, 0);
         data[2] = type;
         msg.CopyTo(data, 3);
-
-        try
-        {
-            //============ 发送数据 ============
-            socket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(ProcessSend), null);
-        }
-        catch (Exception ex)
-        {
-            Disconnect();
-            UnityEngine.Debug.Log("发送数据错误:" + ex.ToString());
-        }
+        send_datas_add.Add(data);
     }
     public void Send(byte type)
     {
@@ -215,52 +245,71 @@ public class TcpClient
         byte[] data = new byte[total_length];
         total_length_bytes.CopyTo(data, 0);
         data[2] = type;
-        try
-        {
-            //============ 发送数据 ============
-            socket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(ProcessSend), data);
-        }
-        catch (Exception ex)
-        {
-            Disconnect();
-            UnityEngine.Debug.Log("发送数据错误:" + ex.ToString());
-        }
+        send_datas_add.Add(data);
     }
-    /// <summary>
-    /// 发送成功
-    /// </summary>
-    /// <param name="sendEventArgs"></param>
-    private void ProcessSend(IAsyncResult ar)
+    public void SendAction()
     {
-        try
+        while (true)
         {
-            int bytesSent = socket.EndSend(ar);
-        }
-        catch (Exception e)
-        {
-            Debug.Log("==ProcessSend Error:" + e.ToString());
-            Disconnect();
+            if (send_datas_add.Count > 0)
+            {
+                lock (send_datas_add)
+                {
+                    send_datas.AddRange(send_datas_add);
+                    send_datas_add.Clear();
+                }
+            }
+
+            if (send_datas.Count > 0)
+            {
+                int len = 0, index = 0;
+                for (int i = 0; i < send_datas.Count; i++)
+                {
+                    len += send_datas[i].Length;
+                }
+                byte[] k = new byte[len];
+                for (int i = 0; i < send_datas.Count; i++)
+                {
+                    send_datas[i].CopyTo(k, index);
+                    index += send_datas[i].Length;
+                }
+                send_datas.Clear();
+                try
+                {
+                    //============ 发送数据 ============
+                    //Debug.Log("发送---------");
+                    socket.Send(k);
+                }
+                catch (Exception ex)
+                {
+                    Disconnect();
+                    UnityEngine.Debug.Log("发送数据错误:" + ex.ToString());
+                }
+
+            }
+            Thread.Sleep(10);
         }
     }
     #endregion
 
     public void Update()
     {
-        if (has_send) { has_send = false; last_send = Time.time; }
-        if (has_recv) { has_recv = false; Last_recv = Time.time; }
-        if ((last_send >= 0) && ((Time.time - last_send) >= 3))
-        {//没间隔1秒发一个心跳包
-         //Debug.Log("=======心跳包=======");
-            //byte[] datas = BitConverter.GetBytes(1);
-            //Send(0);
-            //game.session.Send(game.player_1.name, datas, ConstValue.CSHeartBeatReq, 0);
-        }
-        if ((Last_recv >= 0) && ((Time.time - Last_recv) >= 7))
-        {//居然间隔5秒都没有数据，断线了
-            Debug.LogError("=======居然间隔5秒都没有数据，断线了=======");
-            Last_recv = -1;
-            Disconnect();
-        }
+        DealData();
+        //if (has_send) { has_send = false; last_send = Time.time; }
+        //if (has_recv) { has_recv = false; Last_recv = Time.time; }
+        //if ((last_send >= 0) && ((Time.time - last_send) >= 3))
+        //{//没间隔1秒发一个心跳包
+        // //Debug.Log("=======心跳包=======");
+        //    //byte[] datas = BitConverter.GetBytes(1);
+        //    //Send(0);
+        //    //game.session.Send(game.player_1.name, datas, ConstValue.CSHeartBeatReq, 0);
+        //}
+        //if ((Last_recv >= 0) && ((Time.time - Last_recv) >= 7))
+        //{//居然间隔5秒都没有数据，断线了
+        //    Debug.LogError("=======居然间隔5秒都没有数据，断线了=======");
+        //    Last_recv = -1;
+        //    Disconnect();
+        //}
     }
 
     private static void CloseSocket(Socket socket)
@@ -278,4 +327,10 @@ public class TcpClient
             socket.Close();
         }
     }
+}
+public class BuffItem
+{
+    public byte[] datas;
+    public bool Over;
+    public int total_length;
 }

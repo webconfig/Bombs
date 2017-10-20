@@ -4,20 +4,27 @@ using UnityEngine;
 
 public partial class ServerHandlers : PacketHandlerManager
 {
-    [PacketHandler(1)]
-    public void LoginResult(NetWork client, byte[] datas, ushort start, ushort length)
+    [PacketHandler(10)]
+    public void TcpLoginResult(NetWork client, byte[] datas)
     {
-        Debug.Log("登陆成功");
+        Debug.Log("Tcp登陆成功");
         CommResult ResponseModel;
-        RecvData<CommResult>(datas, out ResponseModel, start, length);
-        client.state = 2;
-        //client.main.LoginOk();
+        RecvData<CommResult>(datas, out ResponseModel);
+        client.TcpLoginOk(ResponseModel.Result);
+    }
+    [PacketHandler(11)]
+    public void UcpLoginResult(NetWork client, byte[] datas)
+    {
+        Debug.Log("Udp登陆成功");
+        CommResult ResponseModel;
+        RecvData<CommResult>(datas, out ResponseModel);
+        client.UdpLoginOk();
     }
     [PacketHandler(2)]
-    public void MsgBack(NetWork client, byte[] datas, ushort start, ushort length)
+    public void MsgBack(NetWork client, byte[] datas)
     {
         WorlData ResponseModel;
-        RecvData<WorlData>(datas, out ResponseModel, start, length);
+        RecvData<WorlData>(datas, out ResponseModel);
         client.AddMsg(ResponseModel);
     }
 }

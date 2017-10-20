@@ -11,7 +11,7 @@ public class main
     //===配置项=====
     public bool client_side_prediction = true;
     public bool server_reconciliation = true;
-    public bool entity_interpolation = true;
+    public bool entity_interpolation = false;
     //=============
     private int input_sequence_number;
     public List<Message> pending_inputs = new List<Message>();
@@ -35,37 +35,28 @@ public class main
 
     public void Update()
     {
-        if (network.state == 2)
+        network.Update(); 
+    }
+
+    public void FixedUpdate()
+    {
+        network.FixedUpdate();
+    }
+
+    public void GameUpdae()
+    {
+        this.processServerMessages();
+
+        // Process inputs.
+        this.processInputs();
+
+        // Interpolate other entities.
+        if (this.entity_interpolation)
         {
-            entity_id = game.Instance.id;
-
-            Entity entity = new Entity();
-            entity.entity_id = entity_id;
-            entities.Add(entity_id, entity);
-
-            //=============
-            CreateObj(entity);
-            network.state = 3;
-        }
-        else if (network.state == 3)
-        {
-            this.processServerMessages();
-
-            if (this.entity_id == null)
-            {
-                return;  // Not connected yet.
-            }
-
-            // Process inputs.
-            this.processInputs();
-
-            // Interpolate other entities.
-            if (this.entity_interpolation)
-            {
-                this.interpolateEntities();
-            }
+            this.interpolateEntities();
         }
     }
+
     /// <summary>
     /// 处理来自服务器的所有消息，即世界更新。
     /// 如果启用，请执行服务器对帐。( do server reconciliation.)
@@ -88,11 +79,7 @@ public class main
                 //如果这是我们第一次看到这个实体，创建一个本地表示。
                 if (!this.entities.ContainsKey(state.entity_id))
                 {
-                    Entity entity1 = new Entity();
-                    entity1.entity_id = state.entity_id;
-                    this.entities[state.entity_id] = entity1;
-                    //==============
-                    CreateObj(entity1);
+                   CreateObj(state.entity_id);
                 }
 
                 var entity = this.entities[state.entity_id];
@@ -163,15 +150,15 @@ public class main
 
 
         Message input = new Message();
-        if (Input.GetKey(KeyCode.A))
+        if (game.Instance.btn_lefg.IsOn)
         {
             input = new Message();
-            input.press_time = dt_sec;
+            input.press_time = dt_sec* -1;
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (game.Instance.btn_right.IsOn)
         {
             input = new Message();
-            input.press_time = dt_sec * -1;
+            input.press_time = dt_sec ;
         }
         else
         {
@@ -224,7 +211,7 @@ public class main
                 var t0 = buffer[0][0];
                 var t1 = buffer[1][0];
                 float k = (render_timestamp - t0) * 1.00f / (t1 - t0);
-                Debug.Log("k:" + k);
+                //Debug.Log("k:" + k);
                 entity.x = x0 + (x1 - x0) * k;
             }
             else
@@ -233,16 +220,24 @@ public class main
                 {
                     entity.x = buffer[0][1];
                 }
-                Debug.Log("111111111111111:" + buffer.Count);
+                //Debug.Log("111111111111111:" + buffer.Count);
             }
         }
     }
 
-    public void CreateObj(Entity entity)
+    public Entity CreateObj(int entity_id)
     {
-        GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+        Entity entity = new Entity();
+        entity.entity_id = entity_id;
+        entities.Add(entity_id, entity);
+
+        GameObject obj = GameObject.Instantiate(game.Instance.prefab);
         EntityObj script = obj.AddComponent<EntityObj>();
         script.entity = entity;
+        obj.SetActive(true);
+
+        return entity;
     }
 
     public void OnGUI()

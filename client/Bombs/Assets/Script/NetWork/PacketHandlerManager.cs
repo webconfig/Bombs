@@ -10,7 +10,7 @@ using System.Net.Sockets;
 /// <typeparam name="TClient"></typeparam>
 public class PacketHandlerManager
 {
-    public delegate void PacketHandlerFunc(NetWork client, byte[] datas, ushort start_index, ushort msg_length);
+    public delegate void PacketHandlerFunc(NetWork client, byte[] datas);
     private Dictionary<byte, PacketHandlerFunc> _handlers;
 
     public PacketHandlerManager()
@@ -50,7 +50,7 @@ public class PacketHandlerManager
     /// <param name="client"></param>
     /// <param name="command"></param>
     /// <param name="datas"></param>
-    public virtual void Handle(NetWork client, byte command, byte[] datas, ushort start_index, ushort msg_length)
+    public virtual void Handle(NetWork client, byte command, byte[] datas)
     {
         PacketHandlerFunc handler;
         if (!_handlers.TryGetValue(command, out handler))
@@ -61,7 +61,7 @@ public class PacketHandlerManager
 
         try
         {
-            handler(client, datas, start_index, msg_length);
+            handler(client, datas);
         }
         catch (PacketElementTypeException ex)
         {
@@ -79,11 +79,11 @@ public class PacketHandlerManager
         UnityEngine.Debug.Log(string.Format("PacketHandlerManager: Handler for '{0}'", command));
     }
 
-    public void RecvData<T>(byte[] data, out T t, ushort start, ushort length)
+    public void RecvData<T>(byte[] data, out T t)
     {
         using (MemoryStream ms = new MemoryStream())
         {
-            ms.Write(data, start, length);
+            ms.Write(data, 0, data.Length);
             ms.Position = 0;
             t = Serializer.Deserialize<T>(ms);
         }

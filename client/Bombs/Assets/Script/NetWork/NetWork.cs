@@ -1,14 +1,20 @@
 ﻿using google.protobuf;
+using LiteNetLib;
+using LiteNetLib.Utils;
+using ProtoBuf;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class NetWork {
 
     public TcpClient tcp;
+    public UdpClient udp;
     public ServerHandlers tcp_handle;
     public main main;
-    public int state = 0;
+ 
     public string ip;
     public int port;
 
@@ -21,28 +27,6 @@ public class NetWork {
         tcp_handle.AutoLoad();
         tcp = new TcpClient(tcp_handle, this);
         tcp.ConnectAsync(ip, port);
-        tcp.ConnectResultEvent += Tcp_ConnectResultEvent;
-        tcp.DisConnectEvent += Tcp_DisConnectEvent;
-    }
-
-    private void Tcp_DisConnectEvent()
-    {
-        state = -1;
-    }
-
-    private void Tcp_ConnectResultEvent(bool t)
-    {
-        if (t)
-        {
-            Debug.Log("连接成功,开始登陆");
-            tcp.Send<LoginRequest>(1, new LoginRequest() { id = game.Instance.id });
-            state = 1;
-        }
-        else
-        {
-            Debug.Log("连接失败");
-            state = -1;
-        }
     }
 
     public List<EntityData> messages=new List<EntityData>();
@@ -74,17 +58,74 @@ public class NetWork {
         tcp.Send<Message>(2, input);
     }
 
-    public void Update()
+    public void TcpLoginOk(int id)
     {
-        if (state == -1)
-        {//断线，重新连接
-            tcp.ConnectAsync(ip, port);
-            state = 0;
-        }
-        else if(state==1)
-        {
-            tcp.Update();
-        }
+        main.entity_id = id;
+        tcp.state = 20;
     }
 
+    public void UdpLoginOk()
+    {
+        udp.state = 20;
+    }
+
+    public void Update()
+    {
+        if (tcp.state == -1)
+        {//断线，重新连接
+            tcp.ConnectAsync(ip, port);
+            tcp.state = 0;
+        }
+        else if (tcp.state == 10)
+        {//连接成功，开始登陆
+            tcp.state = 11;
+            Debug.Log("==Tcp连接成功，开始登陆==");
+            tcp.Send<LoginRequest>(10, new LoginRequest() { id = game.Instance.id });
+        }
+        else if (tcp.state == 20)
+        {//登陆成功
+            Debug.Log("==Tcp登陆成功==");
+            if (udp==null)
+            {
+                udp = new UdpClient(this);
+                udp.Handlers = tcp_handle;
+            }
+            tcp.state = 21;
+        }
+        else if (tcp.state == 30)
+        {
+            main.GameUpdae();
+        }
+        tcp.Update();
+
+        if (udp != null)
+        {
+            if (udp.state == 10)
+            {//连接成功，开始登陆
+                Debug.Log("==开始登陆==");
+                udp.state = 11;
+                udp.Send<LoginRequest>(11, new LoginRequest() { id = main.entity_id });
+            }
+            else if(udp.state==20)
+            {//登陆成功
+                Debug.Log("==Udp登陆成功==");
+                main.CreateObj(main.entity_id);
+                udp.state = 30;
+            }
+            else if (udp.state == 30)
+            {
+                main.GameUpdae();
+            }
+            udp.Update();
+        }
+
+    }
+
+    public void FixedUpdate()
+    {
+        if (udp != null)
+        {
+            udp.FixedUpdate();
+        }
+    }
 }

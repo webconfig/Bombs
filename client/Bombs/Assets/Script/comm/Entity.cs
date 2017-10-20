@@ -7,7 +7,7 @@ public class Entity
 {
     public int entity_id = 0;
     public float x = 0;
-    public float speed = 10;
+    public float speed = 5;
     public List<float[]> position_buffer = new List<float[]>();
 
     public void applyInput(Message msg)
