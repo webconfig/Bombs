@@ -9,7 +9,6 @@ public class Client
 {
     public TcpClient client;
     public IPEndPoint ip;
-    public NetworkStream stream;
 
     /// <summary>
     /// 上一次活跃的时间
@@ -17,26 +16,23 @@ public class Client
     public DateTime ActiveDateTime;
     public int OutMsTimes;
 
-    private int State = 0;
+    public int State = 0;
 
     private int BufferSize = 1024;
-    private byte[] StreamBuffer;
-    private byte[] RecvBuffer;
-    private int RecvOffset = 0;
-    private int PackOffset = 0;
-    private int PackLength = 0;
+    private List<byte[]> RecvBuffer_Add;
+    private List<byte> RecvBuffer;
+    private byte[] buffer;
+    public CallBack<Client, byte, byte[]> Handle;
 
-    public CallBack<Client, byte, byte[], ushort, ushort> Handle;
-
-    public Client(TcpClient _client, CallBack<Client, byte, byte[], ushort, ushort> _Handle)
+    public Client(TcpClient _client, CallBack<Client, byte, byte[]> _Handle)
     {
         State = 1;
         Handle = _Handle;
         client=_client;
         ip = (IPEndPoint)client.Client.RemoteEndPoint;
-        stream = client.GetStream();
-        StreamBuffer = new byte[BufferSize];
-        RecvBuffer = new byte[BufferSize];
+        RecvBuffer = new List<byte>();
+        RecvBuffer_Add = new List<byte[]>();
+        this.buffer = new byte[BufferSize];
         ActiveDateTime = System.DateTime.Now;
         OutMsTimes = 1;
         BeginRead();
@@ -47,14 +43,7 @@ public class Client
     {
         try
         {
-            if (this.stream == null || !this.stream.CanRead)
-            {
-                Log.Error("网络流不可读 关闭");
-                close();
-                return;
-            }
-
-            stream.BeginRead(StreamBuffer, 0, BufferSize, new AsyncCallback(OnReceiveCallback), null);
+            client.Client.BeginReceive(buffer, 0, buffer.Length, 0, new AsyncCallback(OnReceiveCallback), null);
         }
         catch (Exception ex)
         {
@@ -68,7 +57,7 @@ public class Client
         #region 网络异常判断
         try
         {
-            length = stream.EndRead(ar);
+            length = client.Client.EndReceive(ar);
         }
         catch
         {
@@ -85,67 +74,14 @@ public class Client
         {
             ActiveDateTime = System.DateTime.Now;
             OutMsTimes = 1;
-
-            #region 接收数据
-            int total_length = RecvOffset + length;
-            if (total_length > RecvBuffer.Length)
-            {//接受的数据超过缓冲区
-             //Log.Debug("====接受的数据超过缓冲区====");
-                int buff_data_size = RecvOffset - PackOffset;
-                int buff_total_size = length + buff_data_size;
-                if (buff_total_size > BufferSize)
-                {
-                    BufferSize = buff_total_size;
-                }
-                Byte[] newBuffer = new Byte[BufferSize];
-                if (buff_data_size > 0)
-                {
-                    Buffer.BlockCopy(RecvBuffer, PackOffset, newBuffer, 0, buff_data_size);
-                }
-                RecvBuffer = newBuffer;
-                PackOffset = 0;
-                RecvOffset = buff_data_size;
-            }
-
+            Log.Info("===接受到：" + length);
             //===拷贝数据到缓存===
-            Buffer.BlockCopy(StreamBuffer, 0, RecvBuffer, RecvOffset, length);
-            RecvOffset += length;
-            PackLength = RecvOffset - PackOffset;//接受数据的长度
-            #endregion
-
-            #region 解析数据
-            ushort DataSize, MsgSize;
-            byte command;
-            while (PackLength >= 3)//接受数据长度必须至少包含2个字节的长度和一个字节的命令
+            byte[] new_data = new byte[length];
+            Buffer.BlockCopy(buffer, 0, new_data, 0, length);
+            lock (RecvBuffer_Add)
             {
-                DataSize = BitConverter.ToUInt16(RecvBuffer, PackOffset);//包长度
-                if (DataSize <= PackLength)//包长度大于接受数据长度
-                {
-                    command = RecvBuffer[PackOffset + 2];//命令
-                    MsgSize = (ushort)(DataSize - 3);//消息体长度
-                    //Log.Info("新命令：" + command);
-                    try
-                    {
-                        Handle(this, command, RecvBuffer, (ushort)(PackOffset + 3), MsgSize);
-                    }
-                    catch(Exception ex)
-                    {
-                        Log.Error("处理命令：[" + command + "] Error:" + ex.ToString());
-                    }
-                    if (State == -100)
-                    {//退出
-                        return;
-                    }
-                    //==========
-                    PackOffset += DataSize;
-                    PackLength = RecvOffset - PackOffset;
-                }
-                else
-                {
-                    break;
-                }
+                RecvBuffer_Add.Add(new_data);
             }
-            #endregion
         }
         catch
         {
@@ -157,6 +93,71 @@ public class Client
 
         //Debug.Info("[接受]--Over");
         BeginRead();
+    }
+    /// <summary>
+    /// 处理数据
+    /// </summary>
+    public void DealData()
+    {
+        if (RecvBuffer_Add.Count > 0)
+        {
+            lock (RecvBuffer_Add)
+            {
+                for (int i = 0; i < RecvBuffer_Add.Count; i++)
+                {
+                    for (int j = 0; j < RecvBuffer_Add[i].Length; j++)
+                    {
+                        RecvBuffer.Add(RecvBuffer_Add[i][j]);
+                    }
+                }
+                RecvBuffer_Add.Clear();
+            }
+        }
+        if (RecvBuffer.Count >= 3)
+        {
+            Log.Info("===处理数据====");
+            int DataSize = 0, MsgSize;
+            byte command;
+            while (RecvBuffer.Count >= 3)//接受数据长度必须至少包含2个字节的长度和一个字节的命令
+            {
+                DataSize = 0;
+                BytesToInt(RecvBuffer, 0, ref DataSize);//包长度
+                //Debug.Log("包长度:" + DataSize);
+                if (DataSize <= RecvBuffer.Count)//包长度大于接受数据长度
+                {
+                    command = RecvBuffer[2];//命令
+                    MsgSize = (ushort)(DataSize - 3);//消息体长度
+
+                    byte[] msgBytes = new byte[MsgSize];
+                    RecvBuffer.CopyTo(3, msgBytes, 0, msgBytes.Length);
+                    RecvBuffer.RemoveRange(0, DataSize);
+                    try
+                    {
+                        Handle(this, command, msgBytes);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("处理命令：[" + command + "] Error:" + ex.ToString());
+                    }
+                    if (State == -100)
+                    {//退出
+                        return;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+    public void BytesToInt(List<byte> data, int offset, ref int num)
+    {
+        for (int i = offset; i < offset + 1; i++)
+        {
+            num <<= 8;
+            num |= (data[i] & 0xff);
+        }
     }
     #endregion
 
@@ -193,8 +194,8 @@ public class Client
         //============ 发送数据 ============
         try
         {
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
+            //Log.Info("发送：" + data.Length);
+            client.Client.BeginSend(data, 0, data.Length, 0, new AsyncCallback(SendCallback),null);
         }
         catch (Exception ex)
         {
@@ -215,14 +216,22 @@ public class Client
         //============ 发送数据 ============
         try
         {
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
+            client.Client.BeginSend(data, 0, data.Length, 0, new AsyncCallback(SendCallback), null);
         }
         catch (Exception ex)
         {
             close();
             Log.Error("发送数据错误:" + ex.ToString());
         }
+    }
+    private void SendCallback(IAsyncResult ar)
+    {
+        try
+        {
+            client.Client.EndSend(ar);
+        }
+        catch (SocketException ex)
+        { }
     }
     #endregion
 
@@ -232,18 +241,14 @@ public class Client
         if (State != -100)
         {
             close_self();
-            NetworkFactory.Instance.RemoveClient(this);
+            TcpManager.Instance.RemoveClient(this);
         }
     }
     public void close_self()
     {
         Log.Info("【Client】--被动关闭");
         State = -100;
-        if (stream != null)
-        {
-            this.stream.Close();
-            this.stream = null;
-        }
+        client.Close();
     }
     #endregion
 }

@@ -1,29 +1,22 @@
-﻿using System.Net.Sockets;
-using google.protobuf;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using Model;
+﻿using google.protobuf;
+using LiteNetLib;
 
-public partial class ClientHandler : PacketHandlerManager<Client>
+public partial class UDPClientHandler : PacketHandlerManager<NetPeer>
 {
-    public static int id = 0;
     /// <summary>
     /// 客户端登陆
     /// </summary>
     /// <param name="client"></param>
     /// <param name="datas"></param>
-    [PacketHandler(10)]
-    public void Login(Client client, byte[] datas)
+    [PacketHandler(11)]
+    public void Login(NetPeer client, byte[] datas)
     {
-        Log.Info("==客户端登陆==");
+        Log.Info("==udp客户端登陆==");
         LoginRequest request_login;
         RecvData<LoginRequest>(datas, out request_login);
-        id++;
         CommResult response = new CommResult();
-        response.Result = id;
-        Program.game.SessionLogin(id, client );
-        client.Send<CommResult>(10, response);
+        Program.game.UdpLogin(request_login.id, client);
+        client.Send<CommResult>(11, response);
     }
 
     /// <summary>
@@ -34,7 +27,7 @@ public partial class ClientHandler : PacketHandlerManager<Client>
     /// <param name="start"></param>
     /// <param name="length"></param>
     [PacketHandler(2)]
-    public void UpMessage(Client client, byte[] datas)
+    public void UpMessage(NetPeer client, byte[] datas)
     {
         Message request;
         RecvData<Message>(datas, out request);

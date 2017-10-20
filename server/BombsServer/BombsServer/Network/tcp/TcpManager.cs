@@ -4,24 +4,26 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
 
-internal class NetworkFactory
+internal class TcpManager
 {
-    public static NetworkFactory Instance;
+    public static TcpManager Instance;
     private static TcpListener NetworkListener;
     private int port;
     private ClientHandler Handlers;
     public List<Client> Clients = new List<Client>();
-    public object clients_obj = new object();
-    public NetworkFactory(int _port)
+    public List<Client> Clients_Add = new List<Client>();
+
+    public static TcpManager GetInstance(int _port)
+    {
+        return (Instance != null) ? Instance : Instance = Instance = new TcpManager(_port);
+    }
+
+    public TcpManager(int _port)
     {
         port = _port;
         new Thread(new ThreadStart(NetworkStart)).Start();
     }
 
-    public static NetworkFactory GetInstance(int _port)
-    {
-        return (Instance != null) ? Instance : Instance = Instance = new NetworkFactory(_port);
-    }
 
     private void NetworkStart()
     {
@@ -33,7 +35,7 @@ internal class NetworkFactory
 
             NetworkListener = new TcpListener(new System.Net.IPEndPoint(0, port));
             NetworkListener.Start();
-            Log.Info(string.Format("开始监听:{0}", port));
+            Log.Info(string.Format("tcp 端口:{0}", port));
             NetworkListener.BeginAcceptTcpClient(new AsyncCallback(BeginAcceptTcpClient), (object)null);
         }
         catch (Exception ex)
@@ -49,9 +51,9 @@ internal class NetworkFactory
             TcpClient tcpClient = NetworkListener.EndAcceptTcpClient(ar);
             Client client = new Client(tcpClient, Handlers.Handle);
             Log.Info("【ClientManager】--添加客户端:" + client.ip.Address.ToString() + ":" + client.ip.Port.ToString());
-            lock (clients_obj)
+            lock (Clients_Add)
             {
-                Clients.Add(client);
+                Clients_Add.Add(client);
             }
         }
         catch
@@ -63,27 +65,49 @@ internal class NetworkFactory
 
     public void RemoveClient(Client item)
     {
-        lock (clients_obj)
-        {
-            if (Clients.Contains(item))
-            {
-                Clients.Remove(item);
-            }
-        }
+        item.State = -100;
     }
 
 
-    public List<Client> CopyClients()
+    //public List<Client> CopyClients()
+    //{
+    //    List<Client> result = new List<Client>();
+    //    lock(clients_obj)
+    //    {
+    //        for (int i = 0; i < Clients.Count; i++)
+    //        {
+    //            result.Add(Clients[i]);
+    //        }
+    //    }
+    //    return result;
+    //}
+
+
+    public void Update()
     {
-        List<Client> result = new List<Client>();
-        lock(clients_obj)
+        if (Clients_Add.Count > 0)
         {
-            for (int i = 0; i < Clients.Count; i++)
+            lock (Clients_Add)
             {
-                result.Add(Clients[i]);
+                Clients.AddRange(Clients_Add);
+                Clients_Add.Clear();
             }
         }
-        return result;
+
+
+        for (int i = 0; i < Clients.Count; i++)
+        {
+            if (Clients[i].State == -100)
+            {
+                Clients.RemoveAt(i);
+                i--;
+            }
+            else
+            {
+                Clients[i].DealData();
+            }
+        }
+
     }
 
 }

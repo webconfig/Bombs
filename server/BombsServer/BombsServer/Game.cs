@@ -1,13 +1,11 @@
 ﻿using google.protobuf;
+using LiteNetLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 public class Game
 {
-    public Dictionary<int, Client> clients = new Dictionary<int, Client>();
+    public Dictionary<int, Client> TcpSessions = new Dictionary<int, Client>();
+    public Dictionary<int, NetPeer> UdpSessions = new Dictionary<int, NetPeer>();
     public Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
     public Dictionary<int, int> last_processed_input = new Dictionary<int, int>();
     /// <summary>
@@ -23,7 +21,10 @@ public class Game
 
     public void Update()
     {
+        TcpManager.Instance.Update();
+        UdpManager.Instance.Update();
         processInputs();
+        EntityUpdae();
         sendWorldState();
     }
 
@@ -48,12 +49,19 @@ public class Game
 
         #region debug
         //var info = "Last acknowledged input: ";
-        //for (var i = 0; i < this.clients.length; ++i)
+        //for (var i = 0; i < this.Sessions.length; ++i)
         //{
         //    info += "Player " + i + ": #" + (this.last_processed_input[i] || 0) + "   ";
         //}
         //this.status.textContent = info;
         #endregion
+    }
+    public void EntityUpdae()
+    {
+        foreach (var entity in entities.Values)
+        {
+            entity.Update();
+        }
     }
     /// <summary>
     /// 发送状态
@@ -72,7 +80,7 @@ public class Game
             world.datas.Add(ed);
         }
 
-        foreach(var item in clients)
+        foreach(var item in UdpSessions)
         {
             item.Value.Send<WorlData>(2, world);
         }
@@ -83,12 +91,12 @@ public class Game
     /// 登陆
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="client"></param>
-    public void ClientLogin(int id, Client client)
+    /// <param name="Client"></param>
+    public void SessionLogin(int id, Client Client)
     {
-        if (clients.ContainsKey(id))
+        if (TcpSessions.ContainsKey(id))
         {
-            clients[id] = client;
+            TcpSessions[id] = Client;
             Log.Info("客户端重新连接：" + id);
         }
         else
@@ -99,10 +107,23 @@ public class Game
             //==========
             last_processed_input.Add(id, 0);
             //===========
-            clients.Add(id, client);
-            Log.Info("新客户端加入：" + id);
+            TcpSessions.Add(id, Client);
+            Log.Info("新Tcp客户端加入：" + id);
         }
     }
+    public void UdpLogin(int id, NetPeer peer)
+    {
+        if (UdpSessions.ContainsKey(id))
+        {
+            UdpSessions[id] = peer;
+        }
+        else
+        {
+            UdpSessions.Add(id, peer);
+            Log.Info("新Udp客户端加入：" + id);
+        }
+    }
+
     /// <summary>
     /// 消息
     /// </summary>
@@ -131,5 +152,6 @@ public class Game
         Update();
     }
     #endregion
+
 }
 

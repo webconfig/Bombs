@@ -46,16 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="comm\CallBack.cs" />
     <Compile Include="comm\Entity.cs" />
     <Compile Include="comm\game.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Handlers\UDPClientHandler.cs" />
     <Compile Include="Handlers\ClientHandler.cs" />
     <Compile Include="MmTimer.cs" />
+    <Compile Include="Network\IdGenerater.cs" />
     <Compile Include="Network\PacketHandlerManager.cs" />
     <Compile Include="Network\tcp\Client.cs" />
-    <Compile Include="Network\tcp\ClientManager.cs" />
-    <Compile Include="Network\tcp\NetworkFactory.cs" />
+    <Compile Include="Network\tcp\TcpManager.cs" />
+    <Compile Include="Network\Udp\UdpManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\CliUtil.cs" />
@@ -67,7 +68,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\LiteNetLib\LiteNetLib.csproj">
+      <Project>{b0a014e4-0392-4e35-aa42-8fb5a40417e0}</Project>
+      <Name>LiteNetLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="DLL\protobuf-net.dll" />
     <Content Include="scene_demo.xml">
