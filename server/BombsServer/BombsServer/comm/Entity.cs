@@ -13,21 +13,21 @@ public class Entity
     private int index = 0,k=1;
     public void applyInput(Message msg)
     {
-
+        x += msg.press_time * speed;
     }
     public void Update()
     {
-        index += k;
-        if (index == 10)
-        {
-            k = -1;
-            speed = -5;
-        }
-        else if (index == -10)
-        {
-            k = 1;
-            speed = 5;
-        }
-        x += 0.02f * speed;
+        //index += k;
+        //if (index == 10)
+        //{
+        //    k = -1;
+        //    speed = -5;
+        //}
+        //else if (index == -10)
+        //{
+        //    k = 1;
+        //    speed = 5;
+        //}
+        //x += 0.02f * speed;
     }
 }

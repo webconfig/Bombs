@@ -6,6 +6,7 @@ public class Game
 {
     public Dictionary<int, Client> TcpSessions = new Dictionary<int, Client>();
     public Dictionary<int, NetPeer> UdpSessions = new Dictionary<int, NetPeer>();
+    public Dictionary<int, ClientSession> KcpSessions = new Dictionary<int, ClientSession>();
     public Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
     public Dictionary<int, int> last_processed_input = new Dictionary<int, int>();
     /// <summary>
@@ -22,7 +23,7 @@ public class Game
     public void Update()
     {
         TcpManager.Instance.Update();
-        UdpManager.Instance.Update();
+        KcpManager.Instance.Update();
         processInputs();
         EntityUpdae();
         sendWorldState();
@@ -56,6 +57,7 @@ public class Game
         //this.status.textContent = info;
         #endregion
     }
+
     public void EntityUpdae()
     {
         foreach (var entity in entities.Values)
@@ -63,6 +65,7 @@ public class Game
             entity.Update();
         }
     }
+
     /// <summary>
     /// 发送状态
     /// </summary>
@@ -80,7 +83,7 @@ public class Game
             world.datas.Add(ed);
         }
 
-        foreach(var item in UdpSessions)
+        foreach(var item in KcpSessions)
         {
             item.Value.Send<WorlData>(2, world);
         }
@@ -123,7 +126,18 @@ public class Game
             Log.Info("新Udp客户端加入：" + id);
         }
     }
-
+    public void KcpLogin(int id,ClientSession session)
+    {
+        if (KcpSessions.ContainsKey(id))
+        {
+            KcpSessions[id] = session;
+        }
+        else
+        {
+            KcpSessions.Add(id, session);
+            Log.Info("新kcp客户端加入：" + id);
+        }
+    }
     /// <summary>
     /// 消息
     /// </summary>
@@ -131,6 +145,13 @@ public class Game
     public void AddMessage(Message msg)
     {
         messages.Enqueue(msg);
+    }
+    public void AddMessage(Messages msgs)
+    {
+        for (int i = 0; i < msgs.datas.Count; i++)
+        {
+            messages.Enqueue(msgs.datas[i]);
+        }
     }
     #endregion
 

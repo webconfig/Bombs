@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using ProtoBuf;
+using System.Threading;
 
 public class Client
 {
@@ -23,6 +24,9 @@ public class Client
     private List<byte> RecvBuffer;
     private byte[] buffer;
     public CallBack<Client, byte, byte[]> Handle;
+    //===========
+    private Thread recvThraed;
+    //===========
 
     public Client(TcpClient _client, CallBack<Client, byte, byte[]> _Handle)
     {
@@ -35,46 +39,27 @@ public class Client
         this.buffer = new byte[BufferSize];
         ActiveDateTime = System.DateTime.Now;
         OutMsTimes = 1;
-        BeginRead();
+        recvThraed = new Thread(ProcessReceive);
+        recvThraed.Start();
     }
 
     #region 接收
-    private void BeginRead()
+    private void ProcessReceive()
     {
-        try
+        while (State >= 0)
         {
-            client.Client.BeginReceive(buffer, 0, buffer.Length, 0, new AsyncCallback(OnReceiveCallback), null);
-        }
-        catch (Exception ex)
-        {
-            Log.Error("[Client]: BeginRead() Exception" + ex);
-            close();
-        }
-    }
-    private void OnReceiveCallback(IAsyncResult ar)
-    {
-        int length = 0;
-        #region 网络异常判断
-        try
-        {
-            length = client.Client.EndReceive(ar);
-        }
-        catch
-        {
-            close();
-            return;
-        }
-        if (length <= 0)
-        {
-            close();
-            return;
-        }
-        #endregion
-        try
-        {
+            // 检查远程主机是否关闭连接
+            int length = client.Client.Receive(buffer);
+            if (length <= 0)
+            {
+                Log.Error("==BytesTransferred等于0退出==" + length);
+                close();
+                return;
+            }
+
             ActiveDateTime = System.DateTime.Now;
             OutMsTimes = 1;
-            Log.Info("===接受到：" + length);
+            //Log.Info("===接受到：" + length);
             //===拷贝数据到缓存===
             byte[] new_data = new byte[length];
             Buffer.BlockCopy(buffer, 0, new_data, 0, length);
@@ -83,16 +68,6 @@ public class Client
                 RecvBuffer_Add.Add(new_data);
             }
         }
-        catch
-        {
-            if (State == -100)
-            {
-                return;
-            }
-        }
-
-        //Debug.Info("[接受]--Over");
-        BeginRead();
     }
     /// <summary>
     /// 处理数据

@@ -69,20 +69,6 @@ internal class TcpManager
     }
 
 
-    //public List<Client> CopyClients()
-    //{
-    //    List<Client> result = new List<Client>();
-    //    lock(clients_obj)
-    //    {
-    //        for (int i = 0; i < Clients.Count; i++)
-    //        {
-    //            result.Add(Clients[i]);
-    //        }
-    //    }
-    //    return result;
-    //}
-
-
     public void Update()
     {
         if (Clients_Add.Count > 0)

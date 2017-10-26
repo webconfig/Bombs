@@ -75,6 +75,23 @@ namespace google.protobuf
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Messages")]
+  public partial class Messages : global::ProtoBuf.IExtensible
+  {
+    public Messages() {}
+    
+    private readonly global::System.Collections.Generic.List<google.protobuf.Message> _datas = new global::System.Collections.Generic.List<google.protobuf.Message>();
+    [global::ProtoBuf.ProtoMember(1, Name=@"datas", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<google.protobuf.Message> datas
+    {
+      get { return _datas; }
+    }
+  
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
   [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"WorlData")]
   public partial class WorlData : global::ProtoBuf.IExtensible
   {
