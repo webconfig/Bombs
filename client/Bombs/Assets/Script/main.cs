@@ -11,8 +11,11 @@ public class main
     //===配置项=====
     public bool client_side_prediction = true;
     public bool server_reconciliation = true;
-    public bool entity_interpolation = false;
+    public bool entity_interpolation = true;
     //=============
+    /// <summary>
+    /// 输入序号
+    /// </summary>
     private int input_sequence_number;
     public List<Message> pending_inputs = new List<Message>();
 
@@ -22,6 +25,8 @@ public class main
     //=================
     public NetWork network;
     public int server_update_rate = 10;
+    //===============
+    public float lag;
 
 
     public void Init(int _id, int _server_update_rate, string server_ip, int server_port)
@@ -30,7 +35,7 @@ public class main
         server_update_rate = _server_update_rate;
 
         network = new NetWork(this, server_ip, server_port);
-
+        lag = 0;
     }
 
     public void Update()
@@ -70,7 +75,6 @@ public class main
             {
                 break;
             }
-
             //世界状态是实体状态的列表。
             for (var i = 0; i < message.Count; i++)
             {
@@ -113,7 +117,7 @@ public class main
                     else
                     {
                         //对帐被禁用，所以删除所有保存的输入
-                        this.pending_inputs = new List<Message>();
+                        this.pending_inputs.Clear();
                     }
                 }
                 else
@@ -137,6 +141,7 @@ public class main
         }
     }
 
+    private List<Message> inputs = new List<Message>();
     public void processInputs()
     {
 
@@ -149,28 +154,25 @@ public class main
         this.last_ts = now_ts;
 
 
+
         Message input = new Message();
         if (game.Instance.btn_lefg.IsOn)
         {
-            input = new Message();
-            input.press_time = dt_sec* -1;
+            input.press_time = dt_sec * -1;
         }
         else if (game.Instance.btn_right.IsOn)
         {
-            input = new Message();
-            input.press_time = dt_sec ;
+            input.press_time = dt_sec;
         }
         else
         {
-            // Nothing interesting happened.
-            return;
+            input.press_time = 0;
         }
 
         //将输入发送到服务器.
         input.input_sequence_number = this.input_sequence_number++;
         input.entity_id = this.entity_id;
         this.network.send(input);
-
         //做客户端预测.
         if (this.client_side_prediction)
         {

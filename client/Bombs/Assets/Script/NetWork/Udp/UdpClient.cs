@@ -1,5 +1,4 @@
-﻿using google.protobuf;
-using LiteNetLib;
+﻿using LiteNetLib;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.IO;
 using UnityEngine;
 using LiteNetLib.Utils;
 
-public class UdpClient: INetEventListener
+public class UClient: INetEventListener
 {
     private NetManager client;
     private NetPeer udp_server;
@@ -21,7 +20,7 @@ public class UdpClient: INetEventListener
     //===========
     public int state = 0;
 
-    public UdpClient(NetWork _parent)
+    public UClient(NetWork _parent)
     {
         parent = _parent;
         client = new NetManager(this,"111");
@@ -106,10 +105,12 @@ public class UdpClient: INetEventListener
             num |= (data[i] & 0xff);
         }
     }
+
     public void FixedUpdate()
     {
         client.PollEvents();
     }
+
     public void Update()
     {
         DealData();

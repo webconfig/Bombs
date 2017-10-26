@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 public class game : MonoBehaviour
 {
-    public int id=1;
     public GameObject prefab;
     public PressEventTrigger btn_lefg, btn_right;
+    public Text info;
     public string server= "127.0.0.1";
     public int port= 5991;
     private main main;
@@ -24,12 +24,14 @@ public class game : MonoBehaviour
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 30;
         _instance = this;
+
     }
     // Use this for initialization
     void Start()
     {
         main = new main();
         main.Init(1, 15, server, port);
+        Add("Start");
     }
 
     // Update is called once per frame
@@ -48,4 +50,26 @@ public class game : MonoBehaviour
     {
         main.OnGUI();
     }
+
+
+    public List<string> strs = new List<string>();
+    public int index = 0;
+    public void Add(string str)
+    {
+        if(strs.Count>30)
+        {
+            strs.RemoveAt(0);
+        }
+        strs.Add(index.ToString() + "-->:" + str);
+
+        System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+        for(int i=0;i<strs.Count;i++)
+        {
+            stringBuilder.Append(strs[i] + "\n");
+        }
+        index++;
+        info.text = stringBuilder.ToString();
+    }
+
+
 }
